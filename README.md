@@ -64,6 +64,11 @@ Actionable, step-by-step walkthroughs to set up the system from scratch:
    * Docmost collaborative wiki deployment linked to shared databases.
    * Integrated Traefik reverse proxy and automated Let's Encrypt wildcard SSL.
 
+8. [**Guide 08: Monitoring & Alerting (Uptime Kuma & Netdata)**](guides/08-monitoring-and-metrics-setup.md)
+   * Uptime Kuma deployment for service health checks and instant Discord/Telegram phone alerts.
+   * Netdata deployment with NVIDIA GPU pass-through for live RTX 2070 VRAM, temps, and load tracking.
+   * Per-second CPU package thermals, 40GB RAM utilization, and 4-disk S.M.A.R.T. health.
+
 ---
 
 ## 📌 Architecture Highlights
@@ -74,7 +79,7 @@ Actionable, step-by-step walkthroughs to set up the system from scratch:
 * **Boot Management**: GRUB configured to auto-boot to **Ubuntu Server** on remote power-on, with `grub-reboot` support for one-shot remote boots into Windows.
 * **Remote Power Control**: Internal **PCIe WiFi Power Switch Card** (WETEN JH-PcPro) connected to ASUS `PANEL` header `PWR_SW` pins. Provides safe one-tap ACPI graceful shutdowns and instant remote turn-ons.
 * **Remote Access**: Self-hosted WireGuard VPN (via `wg-easy` container) + Dynamic DNS (DDNS). No third-party network relays required.
-* **Application Platform**: **Coolify PaaS** for Vercel-like Git-push deployments, 1-click PostgreSQL/Redis databases, Docmost wiki, and GPU-accelerated local AI (Ollama/WebUI).
+* **Application & Monitoring Platform**: **Coolify PaaS** for Vercel-like Git-push deployments, 1-click PostgreSQL/Redis databases, Docmost wiki, **Uptime Kuma** alerts, and **Netdata** hardware/RTX 2070 telemetry.
 
 ---
 
