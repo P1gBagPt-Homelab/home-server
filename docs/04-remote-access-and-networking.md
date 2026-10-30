@@ -70,37 +70,43 @@ sudo docker compose up -d
 
 ## 3. Remote Operations Workflow (On-Demand Use)
 
-Once WireGuard is configured, your on-demand lifecycle looks like this:
+Combining the **PCIe WiFi card** with **WireGuard** provides a seamless on-demand lifecycle:
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as User (Away from Home)
-    participant Plug as Smart Outlet App
-    participant PC as Home Server (Linux)
+    actor User as You (Away from Home)
+    participant App as PCIe Switch App (Tuya)
+    participant Card as PCIe WiFi Card
+    participant PC as Linux Server (Disks 3 & 4)
     participant WG as WireGuard VPN
     
-    User->>Plug: Turn Outlet ON
-    Plug->>PC: Delivers AC Power (BIOS triggers boot)
-    PC->>PC: Boots into Linux & starts Docker / WireGuard
-    User->>WG: Connect to WireGuard via Phone/Laptop
-    Note over User,PC: Secure tunnel established (10.8.0.x)
-    User->>PC: Access Nextcloud / Plex / Samba / SSH
+    User->>App: Tap "Power On"
+    App->>Card: Cloud / WiFi Command
+    Card->>PC: Pulses Motherboard PWR_SW header
+    PC->>PC: GRUB auto-boots Linux Server
+    PC->>WG: Docker automatically starts wg-easy & services
+    User->>WG: Connect WireGuard from Phone / Laptop
+    Note over User,PC: Encrypted tunnel active (10.8.0.x)
+    User->>PC: Access files, media, containers, SSH
     Note over User,PC: Done using server
-    User->>PC: Run: ssh user@10.8.0.1 "sudo poweroff"
-    PC->>PC: Gracefully flushes disks & powers off
-    User->>Plug: Turn Outlet OFF (cuts standby power)
+    User->>App: Tap "Power Off" (or run: ssh user@10.8.0.1 "sudo poweroff")
+    App->>Card: Sends power button pulse
+    Card->>PC: Triggers ACPI Power Event
+    PC->>PC: Gracefully flushes disks, stops containers & powers off
+    Note over PC: Enters safe standby (~1-2W)
 ```
 
 ---
 
-## 4. Remote Graceful Shutdown over WireGuard
+## 4. Remote Shutdown Options
 
-When you finish your remote session, execute a clean shutdown through the encrypted tunnel:
+You have two simple ways to turn the machine off cleanly:
 
-```bash
-# From your laptop terminal or mobile SSH client (e.g. Termius):
-ssh user@10.8.0.1 "sudo systemctl poweroff"
-```
-
-Once the connection drops and the machine stops responding to ping, switch the smart plug **OFF** in your smart home app.
+1. **Option A: One-Tap App Shutdown (Recommended)**:  
+   Tap **"Power Off"** in the Tuya / Smart Life app. The PCIe card signals the motherboard, triggering ACPI graceful powerdown in Linux or Windows.
+2. **Option B: Terminal Command over WireGuard**:  
+   From a laptop or mobile SSH client (e.g., Termius):
+   ```bash
+   ssh user@10.8.0.1 "sudo systemctl poweroff"
+   ```
