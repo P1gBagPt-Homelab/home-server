@@ -27,6 +27,11 @@ Actionable, step-by-step walkthroughs to set up the system from scratch:
 1. [**Guide 01: Creating the Ubuntu Server Bootable USB**](guides/01-create-bootable-usb.md)
    * Rufus UEFI (GPT) configuration, official ISO download, and safe flashing process.
 
+2. [**Guide 02: Windows & Disk Preparation (Safety Checks)**](guides/02-windows-and-disk-preparation.md)
+   * Disabling Windows Fast Startup (`powercfg -h off`) to prevent locked partitions.
+   * PowerShell disk mapping to protect Windows drives during installation.
+   * ASUS PRIME Z370-A BIOS settings (`ErP Ready: Disabled`, AHCI mode).
+
 ---
 
 ## 📌 Architecture Highlights
