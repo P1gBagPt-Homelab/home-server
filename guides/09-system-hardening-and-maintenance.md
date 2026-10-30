@@ -1,0 +1,155 @@
+# Guide 09: System Hardening, Maintenance & Dual-Boot Clock Sync
+
+Execute this guide immediately after installing Ubuntu Server. It applies the essential **dual-boot clock synchronization fix**, locks down security via a hardened firewall and brute-force protection, enables automated security patches, and configures hardware diagnostic tools.
+
+---
+
+## 1. Dual-Boot Clock Synchronization (Critical!)
+
+### The Problem:
+* **Windows** stores the motherboard hardware clock (RTC) in **Local Time**.
+* **Linux** by default stores the hardware clock in **UTC**.
+* *Result:* Every time you switch from Windows gaming to Linux server (or vice-versa), your system clock is off by several hours, causing broken SSL certificates, failed token authentications, and scrambled cron jobs.
+
+### The Fix:
+Run this single command on your Ubuntu Server to instruct Linux to match the motherboard's local time:
+```bash
+sudo timedatectl set-local-rtc 1 --adjust-system-clock
+```
+
+### Verification:
+```bash
+timedatectl
+```
+*(Confirm `RTC in local TZ: yes` is displayed).*
+
+---
+
+## 2. One-Command Utility Installation
+
+Install the curated maintenance, telemetry, and security toolkit:
+
+```bash
+sudo apt update && sudo apt install -y \
+  ufw \
+  fail2ban \
+  unattended-upgrades \
+  smartmontools \
+  lm-sensors \
+  btop \
+  ncdu \
+  tmux \
+  git \
+  curl \
+  jq
+```
+
+---
+
+## 3. Firewall Hardening with `ufw`
+
+Block all uninvited incoming traffic by default, only opening the exact ports needed for Project Janus:
+
+1. **Set strict default policies**:
+   ```bash
+   sudo ufw default deny incoming
+   sudo ufw default allow outgoing
+   ```
+
+2. **Allow essential services**:
+   ```bash
+   # 1. SSH Management
+   sudo ufw allow 22/tcp comment 'SSH Remote Access'
+
+   # 2. WireGuard VPN (Encrypted Tunnel)
+   sudo ufw allow 51820/udp comment 'WireGuard VPN'
+
+   # 3. Web & Traefik Reverse Proxy (Coolify / Docmost)
+   sudo ufw allow 80/tcp comment 'HTTP Web Traffic'
+   sudo ufw allow 443/tcp comment 'HTTPS Encrypted Web'
+
+   # 4. Coolify Web Dashboard
+   sudo ufw allow 8000/tcp comment 'Coolify Dashboard'
+   ```
+
+3. **Enable the firewall**:
+   ```bash
+   sudo ufw enable
+   ```
+   *(Type `y` and press Enter when prompted).*
+
+4. **Verify status**:
+   ```bash
+   sudo ufw status verbose
+   ```
+
+---
+
+## 4. SSH Brute-Force Defense (`fail2ban`)
+
+Bots continuously scan public IPs trying common passwords. `fail2ban` automatically monitors SSH authentication logs and temporarily bans any IP address that fails 3 consecutive logins.
+
+1. **Create local override configuration**:
+   ```bash
+   sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+   ```
+2. **Start and enable the service**:
+   ```bash
+   sudo systemctl enable --now fail2ban
+   ```
+3. **Verify SSH protection is active**:
+   ```bash
+   sudo fail2ban-client status sshd
+   ```
+   *(Shows currently banned IPs and active jail filter).*
+
+---
+
+## 5. Automated Security Updates (`unattended-upgrades`)
+
+Ensure critical Linux kernel and security vulnerabilities are patched automatically without needing manual intervention:
+
+1. Run the interactive setup:
+   ```bash
+   sudo dpkg-reconfigure -plow unattended-upgrades
+   ```
+2. Select **<Yes>** and press **Enter**.
+3. *Result:* Ubuntu will quietly install security patches daily in the background. It will never restart running Docker containers unexpectedly.
+
+---
+
+## 6. Hardware & Storage Telemetry
+
+### 1. Motherboard & CPU Thermal Sensors (`lm-sensors`):
+Detect the thermal sensors on your ASUS PRIME Z370-A and i7-8700K:
+```bash
+sudo sensors-detect --auto
+```
+Check instantaneous temperatures anytime by typing:
+```bash
+sensors
+```
+
+### 2. S.M.A.R.T. Drive Health Checks (`smartmontools`):
+Check the physical health status of your drives to prevent unexpected disk failures:
+```bash
+# Check overall health status (replace /dev/sdX with drive name)
+sudo smartctl -H /dev/sda
+
+# View detailed error logs and reallocated bad sectors
+sudo smartctl -A /dev/sda
+```
+*(Look for `SMART overall-health self-assessment test result: PASSED`)*.
+
+---
+
+## 7. Daily Admin Command Cheat-Sheet
+
+* **`btop`**: Beautiful, interactive terminal dashboard displaying real-time CPU, 40GB RAM, network speeds, and **RTX 2070 GPU VRAM/temperature** directly in your terminal.
+* **`ncdu /data`**: Interactive storage visualizer. Instantly shows which Docker containers or logs are consuming space on your drives.
+* **`tmux`**: Keeps long-running commands, builds, or scripts alive even if your laptop disconnects from SSH.
+  * Start session: `tmux`
+  * Detach session: Press `Ctrl + B`, then `D`
+  * Reattach session: `tmux attach`
+
+Your server OS is now hardened, synchronized with Windows, and fully equipped with professional diagnostic tools!
