@@ -49,6 +49,12 @@ Actionable, step-by-step walkthroughs to set up the system from scratch:
    * Tuya / Smart Life app pairing and 433 MHz wireless desk button setup.
    * Verifying remote power-on and safe ACPI shutdowns.
 
+6. [**Guide 06: WireGuard VPN & Core Infrastructure Setup**](guides/06-wireguard-vpn-and-infrastructure.md)
+   * Dynamic DNS (DuckDNS) hostname creation and token setup.
+   * Home router UDP port 51820 forwarding and static IP lease.
+   * Docker Compose deployment for `wg-easy` and `dockge` project manager.
+   * Client QR code generation for iOS/Android and end-to-end remote testing.
+
 ---
 
 ## 📌 Architecture Highlights
