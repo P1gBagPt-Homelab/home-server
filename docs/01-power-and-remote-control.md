@@ -46,11 +46,18 @@ Because idle standby draw (~1–2W) is not a concern, the PCIe WiFi card elimina
 
 ---
 
-## 2. Hardware Installation Guide
+## 2. Hardware Installation & BIOS Standby Configuration
+
+### Critical Motherboard BIOS Setting (ASUS PRIME Z370-A):
+Before using the card, ensure your PCIe slots maintain 3.3V standby power when the computer is off:
+1. Boot into BIOS (`DEL` or `F2`).
+2. Go to **Advanced > APM Configuration > ErP Ready**.
+3. Set **ErP Ready** to **Disabled**.
+   *(If enabled, the motherboard cuts all standby power to PCIe slots upon shutdown, which would turn off the WiFi card).*
 
 ### What to Purchase:
-* Search for: **"Tuya Smart PCIe Computer Power Switch"** or **"eWeLink Desktop PC Remote Switch"** (~$10–$15 on Amazon or AliExpress).
-* Select a model that includes standard and low-profile brackets and the 2-pin motherboard splitter cables.
+* Search for: **"Tuya Smart PCIe Computer Power Switch"** or **"eWeLink Desktop PC Remote Switch"** (~€10–€18 on Amazon or AliExpress).
+* Select a model that includes standard brackets, antenna, and the 2-pin motherboard splitter cables.
 
 ### Physical Installation Steps:
 1. **Power down and unplug the PC** from the wall.
