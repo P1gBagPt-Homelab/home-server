@@ -20,6 +20,15 @@ A documentation repository and operational guide for running a dual-purpose pers
 
 ---
 
+## 🛠️ Step-by-Step Implementation Guides
+
+Actionable, step-by-step walkthroughs to set up the system from scratch:
+
+1. [**Guide 01: Creating the Ubuntu Server Bootable USB**](guides/01-create-bootable-usb.md)
+   * Rufus UEFI (GPT) configuration, official ISO download, and safe flashing process.
+
+---
+
 ## 📌 Architecture Highlights
 
 * **Isolation Level**: Complete hardware disk segregation.
@@ -32,7 +41,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 
 ---
 
-## 📚 Documentation Index
+## 📚 Technical Documentation Index
 
 1. [**Hardware Specifications & Motherboard Guide**](docs/hardware-specs.md)
    * ASUS PRIME Z370-A `PANEL` header pinout for PCIe switch wiring.
