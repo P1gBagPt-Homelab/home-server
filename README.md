@@ -55,6 +55,12 @@ Actionable, step-by-step walkthroughs to set up the system from scratch:
    * Docker Compose deployment for `wg-easy` and `dockge` project manager.
    * Client QR code generation for iOS/Android and end-to-end remote testing.
 
+7. [**Guide 07: Shared Services (PostgreSQL, Redis, Docmost & Nginx)**](guides/07-shared-services-and-docmost.md)
+   * Free domain routing strategy (`.home` / DuckDNS subdomains) with Nginx Proxy Manager.
+   * Central shared PostgreSQL 16 and Redis 7 stack on internal `server-net`.
+   * Docmost collaborative documentation wiki deployment.
+   * Standard connection template for mini projects to consume shared databases.
+
 ---
 
 ## 📌 Architecture Highlights
