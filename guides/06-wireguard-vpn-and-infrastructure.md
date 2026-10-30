@@ -9,7 +9,7 @@ This guide walks you through setting up **Dynamic DNS (DuckDNS)**, deploying you
 Since home residential IP addresses periodically change, Dynamic DNS gives your home server a permanent hostname (e.g., `daniel-server.duckdns.org`):
 
 1. Go to [https://www.duckdns.org](https://www.duckdns.org) and log in (via GitHub, Google, or Reddit).
-2. Under **Domains**, pick a unique subdomain (e.g., `daniel-home-server`) and click **add domain**.
+2. Under **Domains**, pick a unique subdomain (e.g., `janus-server` or `janus-daniel`) and click **add domain**.
 3. Note your **DuckDNS Token** displayed at the top of the page.
 
 ---
@@ -52,7 +52,7 @@ services:
     restart: unless-stopped
     environment:
       # Your DuckDNS Domain
-      - WG_HOST=daniel-home-server.duckdns.org
+      - WG_HOST=janus-server.duckdns.org
       # Set a strong password for the WireGuard Web Admin
       - PASSWORD=YourSecureAdminPassword
       - WG_PORT=51820

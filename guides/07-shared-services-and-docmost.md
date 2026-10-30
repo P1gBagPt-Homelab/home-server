@@ -8,13 +8,13 @@ This gives you clean, professional URLs (e.g., `https://docs.your-domain.duckdns
 
 ## 1. How DuckDNS Wildcard Routing Works
 
-When you create a domain on DuckDNS (e.g., `myhomelab.duckdns.org`), DuckDNS automatically enables **wildcard resolution (`*.myhomelab.duckdns.org`)**.
+When you create a domain on DuckDNS (e.g., `janus-server.duckdns.org`), DuckDNS automatically enables **wildcard resolution (`*.janus-server.duckdns.org`)**.
 
 This means any subdomain you invent automatically points to your home server:
-* `docs.myhomelab.duckdns.org` ──> **Docmost Wiki**
-* `dockge.myhomelab.duckdns.org` ──> **Dockge Container Manager**
-* `proxy.myhomelab.duckdns.org` ──> **Nginx Proxy Manager Admin**
-* `app1.myhomelab.duckdns.org` ──> **Your Custom Mini Project**
+* `docs.janus-server.duckdns.org` ──> **Docmost Wiki**
+* `dockge.janus-server.duckdns.org` ──> **Dockge Container Manager**
+* `proxy.janus-server.duckdns.org` ──> **Nginx Proxy Manager Admin**
+* `app1.janus-server.duckdns.org` ──> **Your Custom Mini Project**
 
 When connected through your **WireGuard VPN** (or on your home Wi-Fi), Nginx intercepts these names and directs traffic to the correct internal container.
 

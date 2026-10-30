@@ -1,8 +1,10 @@
-# Hybrid Gaming & On-Demand Home Server (Dual-Boot)
+# Project Janus: Hybrid Gaming & On-Demand Home Server
+
+> *Named after **Janus**, the Roman god of duality and transitions, looking simultaneously toward high-performance Windows gaming and a rock-solid, on-demand Ubuntu home server.*
 
 A documentation repository and operational guide for running a dual-purpose personal computer that operates as a **100% isolated Dual-Boot machine**:
-* **Mode 1**: High-performance Windows Gaming Rig (Disks 1 & 2).
-* **Mode 2**: On-Demand **Ubuntu Server 24.04 LTS** (Disks 3 & 4), remotely powered via an internal **PCIe WiFi Remote Power Switch** and secured through a self-hosted **WireGuard VPN**.
+* **Face 1 (Gaming)**: High-performance Windows Gaming Rig (Disks 1 & 2).
+* **Face 2 (Server)**: On-Demand **Ubuntu Server 24.04 LTS** (Hostname: `janus`, Disks 3 & 4), remotely powered via an internal **WETEN PCIe WiFi Remote Power Switch** and secured through a self-hosted **WireGuard VPN**.
 
 ---
 

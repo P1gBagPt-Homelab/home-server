@@ -92,7 +92,7 @@ This guide walks you through installing **Ubuntu Server 24.04 LTS** with custom 
 ## Step 4: Profile Configuration & User Setup
 
 1. **Your name**: Your name (e.g., `Daniel`).
-2. **Your server's name**: `homeserver` (or any hostname you prefer).
+2. **Your server's name**: `janus`
 3. **Pick a username**: `daniel`.
 4. **Choose a password**: Set a strong password (this password will be used for `sudo` commands and SSH).
 5. Select **Done**.
