@@ -75,6 +75,12 @@ Actionable, step-by-step walkthroughs to set up the system from scratch:
    * Automated background security patching via `unattended-upgrades`.
    * Drive S.M.A.R.T. diagnostics, CPU thermal detection (`lm-sensors`), and `btop` CLI dashboard.
 
+10. [**Guide 10: Automated Backups & Disaster Recovery**](guides/10-automated-backups-and-recovery.md)
+    * Automated 3-2-1 backup pipeline: local daily snapshots on Disk 4 + encrypted offsite cloud sync.
+    * PostgreSQL database dumps, Docmost wiki storage, and Docker volumes.
+    * Client-side zero-knowledge encryption via Rclone Crypt (Google Drive, Backblaze B2, OneDrive).
+    * 5-minute disaster recovery protocol to restore databases and files from scratch.
+
 ---
 
 ## 📌 Architecture Highlights
