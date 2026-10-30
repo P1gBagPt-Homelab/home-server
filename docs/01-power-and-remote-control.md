@@ -1,62 +1,93 @@
-# 01. Power & Remote Management
+# 01. Power & Remote Management (PCIe WiFi Switch)
 
-Managing an on-demand server requires a reliable way to turn the machine ON and OFF remotely without risking hardware failure or filesystem corruption.
+For this build, a **PCIe WiFi Remote Power Switch card** (Tuya / eWeLink / Smart Life compatible) is the primary remote power management solution. 
 
----
-
-## 1. Turning the PC ON via Smart Outlet
-
-Standard PC power supplies (ATX standard) remain in standby when plugged into power. To boot the machine when a smart outlet turns on, you must configure the motherboard UEFI/BIOS.
-
-### BIOS / UEFI Configuration Steps:
-1. Turn on or restart the PC and repeatedly press `DEL` or `F2` to enter the BIOS.
-2. Switch to **Advanced Mode** (often `F7`).
-3. Locate power management settings. Common names by motherboard vendor:
-   * **ASUS**: *Advanced > APM Configuration > Restore AC Power Loss* -> Set to **Power On**.
-   * **MSI**: *Settings > Advanced > Power Management Setup > Restore after AC Power Loss* -> Set to **Power On**.
-   * **Gigabyte**: *Settings > Platform Power > AC BACK* -> Set to **Always On** (or **Memory / Full-On**).
-   * **ASRock**: *Advanced > ACPI Configuration > Restore on AC/Power Loss* -> Set to **Power On**.
-4. Save changes and exit (`F10`).
-
-### How It Operates:
-* When the smart outlet is toggled **ON**, the motherboard detects the incoming AC current and powers the system on immediately.
+Because idle standby draw (~1–2W) is not a concern, the PCIe WiFi card eliminates the complexities, safety hazards, and clunkiness of smart outlets.
 
 ---
 
-## 2. ⚠️ The Critical Warning: Turning the PC OFF
+## 1. Why the PCIe WiFi Card is the Chosen Solution
 
-> [!CAUTION]
-> **NEVER turn off your PC by cutting power with the smart plug while the OS is running.**
-> Abrupt power cuts bypass the operating system's disk-cache flushing routines. This causes:
-> * Filesystem corruption (NTFS / ext4 / ZFS dirty state).
-> * Incomplete container/database writes (SQLite / Postgres corruption).
-> * Parity synchronization errors across multi-disk arrays.
-> * Head-park stress on traditional mechanical hard drives.
+```
+┌────────────────────────────────────────────────────────┐
+│                   Mobile Phone App                     │
+│               (Tuya / Smart Life / eWeLink)            │
+└──────────────────────────┬─────────────────────────────┘
+                           │ WiFi (Internet / Local)
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│             PCIe WiFi Remote Switch Card               │
+│               (Powered via PCIe / USB)                 │
+└────────────┬─────────────────────────────┬─────────────┘
+             │ 2-Pin Splitter              │ 2-Pin Splitter (Optional)
+             ▼                             ▼
+┌──────────────────────────┐  ┌──────────────────────────┐
+│  Motherboard PWR_SW Header│  │ Motherboard RST_SW Header│
+└──────────────────────────┘  └──────────────────────────┘
+             ▲                             ▲
+             │                             │
+    PC Case Physical Button       PC Case Reset Button
+```
 
-### Safe Two-Step Shutdown Protocol:
-1. **Step 1: Graceful Software Shutdown**
-   Trigger an OS-level shutdown remotely.
-   * **Windows**: Run `shutdown /s /t 0` (via SSH, Home Assistant integration, or a remote shortcut).
-   * **Linux**: Run `sudo systemctl poweroff` (or `sudo shutdown -h now`).
-2. **Step 2: Cut Standby Power (Optional)**
-   Once the fans stop spinning and the PC is in standby mode (~1–2W power draw), you can switch the smart plug to **OFF** if you want zero phantom power drain.
+### Key Advantages:
+1. **Single-Tap Graceful Shutdown**:
+   * Tapping "Power Off" in the app sends an ACPI shutdown signal to the motherboard.
+   * Both Windows and Linux cleanly unmount the 4 disks, shut down Docker containers, flush write caches, and power off safely.
+   * **Zero risk of disk or filesystem corruption.**
+2. **Instant Remote Power ON**:
+   * Tapping "Power On" in the app closes the circuit on the `PWR_SW` pins for 0.5s, exactly as if your finger pressed the button on the front of the computer case.
+   * Works from anywhere via 4G/5G or WiFi without needing port forwarding or router configuration for the power signal.
+3. **Emergency Recovery (Frozen Machine)**:
+   * If an OS locks up or the kernel crashes, the app supports a **"Long Press"** (holding power for 5 seconds) to force an emergency hardware cutoff, or a **Reset** pulse to restart.
+4. **Physical Case Button Remains Fully Functional**:
+   * The included Y-splitter cables connect between your PC case's front panel wires and the motherboard headers. You can still use the physical power button on your desk normally.
+5. **No BIOS Dependencies**:
+   * Does not require finicky "Restore on AC Power Loss" settings in UEFI.
 
 ---
 
-## 3. Alternative & Hybrid Remote Power Methods
+## 2. Hardware Installation Guide
 
-If relying purely on a smart outlet feels cumbersome for shutdowns, consider these proven alternatives:
+### What to Purchase:
+* Search for: **"Tuya Smart PCIe Computer Power Switch"** or **"eWeLink Desktop PC Remote Switch"** (~$10–$15 on Amazon or AliExpress).
+* Select a model that includes standard and low-profile brackets and the 2-pin motherboard splitter cables.
 
-### Method A: Wake-on-LAN (WoL)
-* **How it works**: The PC stays plugged into wall power in standby (~1–2W). A network "Magic Packet" sent to the motherboard's MAC address triggers boot.
-* **Pros**: No smart plug needed; native support in Windows/Linux; can be triggered from phone apps (e.g., *Wake on Lan* for Android/iOS) or router web interfaces.
-* **Cons**: Requires a wired Ethernet connection for reliability; cannot turn the PC *off* (only on).
+### Physical Installation Steps:
+1. **Power down and unplug the PC** from the wall.
+2. Locate an available **PCIe x1 slot** (it also fits into x4, x8, or x16 slots).
+3. Insert the card and secure the bracket with a screw.
+4. **Locate your Motherboard Front Panel Header**:
+   * Find the 2 pins labeled `PWR_SW` (or `POWER SW`).
+   * Unplug the existing front-panel power button cable coming from your PC case.
+5. **Connect the Splitter Cable**:
+   * Plug the splitter's female connector into the motherboard `PWR_SW` pins.
+   * Plug one branch into the PCIe card's `POWER` header.
+   * Plug the other branch back into your PC case's front panel power button cable.
+6. *(Optional)* Repeat the step for the `RST_SW` (Reset Switch) pins if your card includes a reset line.
+7. Plug the PC back into the wall.
 
-### Method B: PCIe / USB WiFi Remote Power Switch
-* **Examples**: Tuya / eWeLink PCIe PC Remote Switch (~$10–$15 on Amazon / AliExpress).
-* **How it works**: A small expansion card plugs into a PCIe slot (or USB) and bridges directly to the motherboard front-panel `PWR_SW` pins.
-* **Pros**:
-  * Mimics pressing the physical power button.
-  * Sends a graceful ACPI shutdown signal when toggled off.
-  * Can force a hard reset if the machine freezes.
-  * Works over WiFi / phone app anywhere in the world.
+---
+
+## 3. Mobile App Setup & Configuration
+
+1. Download the **Smart Life** or **Tuya Smart** app (iOS / Android).
+2. Put the PCIe card into pairing mode (usually by holding the onboard pairing button for 5 seconds until the LED blinks rapidly).
+3. Add the device in the app and connect it to your home 2.4 GHz WiFi network.
+4. Rename the device (e.g., `Home PC / Server Power`).
+
+### ACPI Behavior Settings (In OS):
+* **Linux Server**: By default, `systemd-logind` handles the ACPI power button event by initiating a graceful `poweroff`. To verify, inspect `/etc/systemd/logind.conf`:
+  ```ini
+  HandlePowerKey=poweroff
+  ```
+* **Windows (Gaming)**: Ensure Windows is set to shut down when the power button is pressed:
+  * *Control Panel > Power Options > Choose what the power button does > "When I press the power button: Shut down"*.
+
+---
+
+## 4. Alternative Reference: Smart Plug & Wake-on-LAN
+
+While the PCIe card is the primary standard for this build, the alternatives remain documented for reference:
+
+* **Wake-on-LAN (WoL)**: Can be used as a software fallback if the PCIe card loses WiFi connection. Send a magic packet to the PC's MAC address from your router or a local device.
+* **Smart Plug**: If ever deployed to measure wattage draw, leave it permanently set to **ON** and do not use it to force power cuts while the operating system is running.
