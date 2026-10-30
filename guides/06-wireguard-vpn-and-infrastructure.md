@@ -1,12 +1,12 @@
-# Guide 06: WireGuard VPN & Core Infrastructure Setup
+# Guide 06: WireGuard VPN & Remote Access Gateway
 
-This guide walks you through setting up **Dynamic DNS (DuckDNS)**, deploying your self-hosted **WireGuard VPN (`wg-easy`)**, and launching **Dockge** (the Docker Compose manager for your mini-projects).
+This guide walks you through setting up **Dynamic DNS (DuckDNS)**, forwarding the WireGuard UDP port on your home router, and deploying **`wg-easy`** (WireGuard VPN with a web dashboard) so you can connect to Project Janus and Coolify securely from anywhere.
 
 ---
 
 ## Step 1: Set Up Free Dynamic DNS (DuckDNS)
 
-Since home residential IP addresses periodically change, Dynamic DNS gives your home server a permanent hostname (e.g., `daniel-server.duckdns.org`):
+Since home residential IP addresses periodically change, Dynamic DNS gives your home server a permanent hostname (e.g., `janus-server.duckdns.org`):
 
 1. Go to [https://www.duckdns.org](https://www.duckdns.org) and log in (via GitHub, Google, or Reddit).
 2. Under **Domains**, pick a unique subdomain (e.g., `janus-server` or `janus-daniel`) and click **add domain**.
@@ -31,13 +31,13 @@ To allow encrypted WireGuard VPN packets through your home router:
 
 ---
 
-## Step 3: Deploy Core Infrastructure Stack (WireGuard + Dockge)
+## Step 3: Deploy WireGuard Gateway (`wg-easy`)
 
-Connect via SSH to your server (`ssh daniel@192.168.1.150`) and create the core infrastructure directory:
+Connect via SSH to your server (`ssh daniel@192.168.1.150`):
 
 ```bash
-mkdir -p /data/compose/infrastructure /data/volumes/wireguard /data/volumes/dockge /data/compose/projects
-cd /data/compose/infrastructure
+mkdir -p /data/compose/wireguard /data/volumes/wireguard
+cd /data/compose/wireguard
 nano docker-compose.yml
 ```
 
@@ -45,7 +45,6 @@ Paste the following `docker-compose.yml`:
 
 ```yaml
 services:
-  # WireGuard VPN with Web Dashboard
   wg-easy:
     image: ghcr.io/wg-easy/wg-easy:latest
     container_name: wg-easy
@@ -70,23 +69,9 @@ services:
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
       - net.ipv4.ip_forward=1
-
-  # Dockge: Web UI for Managing Docker Compose Mini-Projects
-  dockge:
-    image: louislam/dockge:latest
-    container_name: dockge
-    restart: unless-stopped
-    ports:
-      - "5001:5001"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /data/volumes/dockge:/app/data
-      - /data/compose/projects:/data/compose/projects
-    environment:
-      - DOCKGE_STACKS_DIR=/data/compose/projects
 ```
 
-Save and exit (`Ctrl + O`, `Enter`, `Ctrl + X`), then start the containers:
+Save and exit (`Ctrl + O`, `Enter`, `Ctrl + X`), then start WireGuard:
 ```bash
 docker compose up -d
 ```
@@ -95,39 +80,33 @@ docker compose up -d
 
 ## Step 4: Configure WireGuard Clients (Phone & Laptop)
 
-1. Open your browser on any home device and go to:  
+1. Open your browser on any home device and navigate to:  
    👉 `http://192.168.1.150:51821`
 2. Log in using the password you set in the compose file.
 3. **Add Mobile Phone Client**:
    * Click **"New Client"**, name it `Phone`, and click **Create**.
    * Click the **QR code** icon next to `Phone`.
    * Open the official **WireGuard App** on iOS or Android.
-   * Tap **"+" > Scan QR Code**, scan the screen, name the tunnel `Home`, and save.
+   * Tap **"+" > Scan QR Code**, scan the screen, name the tunnel `Janus`, and save.
 4. **Add Laptop Client**:
    * Click **"New Client"**, name it `Laptop`.
    * Click **Download** to get the `.conf` profile.
-   * Import it into the WireGuard desktop client.
+   * Import it into the official WireGuard desktop client.
 
 ---
 
-## Step 5: The Ultimate Remote Test
+## Step 5: Verify Remote Tunnel & Access to Coolify
 
-Now test your complete on-demand lifecycle from outside your local network:
+Now test your complete encrypted tunnel from outside your home network:
 
-1. **Disconnect phone from home Wi-Fi** (switch to 4G/5G mobile data).
-2. Open the **WireGuard app** on your phone and toggle **"Home"** ON.
-3. Open your phone's browser and go to:
-   * **Dockge UI**: `http://10.8.0.1:5001` *(You can now manage all your mini-projects from anywhere!)*
+1. **Disconnect your phone from home Wi-Fi** (switch to cellular 4G/5G).
+2. Open the **WireGuard app** on your phone and toggle **"Janus"** ON.
+3. Open your phone's browser and navigate to:
+   * **Coolify PaaS Dashboard**: `http://10.8.0.1:8000` *(You can now manage all your mini-projects and databases from anywhere!)*
    * **WireGuard Admin**: `http://10.8.0.1:51821`
-4. Test mobile SSH via Termius or Prompt:
+4. Test mobile SSH via Termius:
    ```bash
    ssh daniel@10.8.0.1
    ```
 
----
-
-## 🚀 Complete Setup Finished!
-
-Your hybrid setup is now 100% architected and documented:
-* **To Game**: Press the power button or wireless desk button -> Select Windows in GRUB -> 100% native gaming.
-* **To Use Server Remotely**: Tap "Power On" in Smart Life -> Boots to Ubuntu Server -> Connect WireGuard on phone/laptop -> Access projects -> Tap "Power Off" in Smart Life for a safe shutdown.
+You now have a private, bank-grade encrypted tunnel directly into Project Janus from anywhere in the world!
