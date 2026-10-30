@@ -43,6 +43,12 @@ Actionable, step-by-step walkthroughs to set up the system from scratch:
    * NVIDIA Container Toolkit setup for GPU-accelerated Docker containers.
    * Storage permissions and folder structure initialization on `/data`.
 
+5. [**Guide 05: WETEN PCIe Switch Hardware Installation & Pairing**](guides/05-remote-switch-weten-setup.md)
+   * Physical card seating in `PCIEX1_4` to maintain full RTX 2070 airflow.
+   * ASUS `PANEL` header Y-splitter wiring for `PWR_SW` and `RST_SW`.
+   * Tuya / Smart Life app pairing and 433 MHz wireless desk button setup.
+   * Verifying remote power-on and safe ACPI shutdowns.
+
 ---
 
 ## 📌 Architecture Highlights
