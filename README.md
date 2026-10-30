@@ -69,6 +69,12 @@ Actionable, step-by-step walkthroughs to set up the system from scratch:
    * Netdata deployment with NVIDIA GPU pass-through for live RTX 2070 VRAM, temps, and load tracking.
    * Per-second CPU package thermals, 40GB RAM utilization, and 4-disk S.M.A.R.T. health.
 
+9. [**Guide 09: System Hardening, Maintenance & Dual-Boot Clock Sync**](guides/09-system-hardening-and-maintenance.md)
+   * Dual-boot RTC hardware clock fix (`timedatectl`) to eliminate time desync with Windows.
+   * Strict `ufw` firewall policies and `fail2ban` SSH brute-force defense.
+   * Automated background security patching via `unattended-upgrades`.
+   * Drive S.M.A.R.T. diagnostics, CPU thermal detection (`lm-sensors`), and `btop` CLI dashboard.
+
 ---
 
 ## 📌 Architecture Highlights
