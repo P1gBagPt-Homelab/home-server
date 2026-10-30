@@ -51,17 +51,18 @@ Actionable, step-by-step walkthroughs to set up the system from scratch:
    * Tuya / Smart Life app pairing and 433 MHz wireless desk button setup.
    * Verifying remote power-on and safe ACPI shutdowns.
 
-6. [**Guide 06: WireGuard VPN & Core Infrastructure Setup**](guides/06-wireguard-vpn-and-infrastructure.md)
+6. [**Guide 06: WireGuard VPN & Remote Access Gateway**](guides/06-wireguard-vpn-and-infrastructure.md)
    * Dynamic DNS (DuckDNS) hostname creation and token setup.
    * Home router UDP port 51820 forwarding and static IP lease.
-   * Docker Compose deployment for `wg-easy` and `dockge` project manager.
+   * Docker Compose deployment for `wg-easy` (WireGuard VPN with web dashboard).
    * Client QR code generation for iOS/Android and end-to-end remote testing.
 
-7. [**Guide 07: Shared Services (PostgreSQL, Redis, Docmost & Nginx)**](guides/07-shared-services-and-docmost.md)
-   * Free domain routing strategy (`.home` / DuckDNS subdomains) with Nginx Proxy Manager.
-   * Central shared PostgreSQL 16 and Redis 7 stack on internal `server-net`.
-   * Docmost collaborative documentation wiki deployment.
-   * Standard connection template for mini projects to consume shared databases.
+7. [**Guide 07: Coolify PaaS Setup (Vercel-like Deployment on Janus)**](guides/07-coolify-paas-setup.md)
+   * 1-line automated Coolify installer on Ubuntu Server.
+   * GitHub App integration for automatic builds and deployments on `git push`.
+   * 1-click provisioning of shared PostgreSQL 16 and Redis 7 databases.
+   * Docmost collaborative wiki deployment linked to shared databases.
+   * Integrated Traefik reverse proxy and automated Let's Encrypt wildcard SSL.
 
 ---
 
@@ -73,7 +74,7 @@ Actionable, step-by-step walkthroughs to set up the system from scratch:
 * **Boot Management**: GRUB configured to auto-boot to **Ubuntu Server** on remote power-on, with `grub-reboot` support for one-shot remote boots into Windows.
 * **Remote Power Control**: Internal **PCIe WiFi Power Switch Card** (WETEN JH-PcPro) connected to ASUS `PANEL` header `PWR_SW` pins. Provides safe one-tap ACPI graceful shutdowns and instant remote turn-ons.
 * **Remote Access**: Self-hosted WireGuard VPN (via `wg-easy` container) + Dynamic DNS (DDNS). No third-party network relays required.
-* **Workload Stack**: Docker & Docker Compose for self-hosted mini-projects with Dockge/Nginx Proxy Manager, prepped for GPU-accelerated local AI (Ollama/WebUI).
+* **Application Platform**: **Coolify PaaS** for Vercel-like Git-push deployments, 1-click PostgreSQL/Redis databases, Docmost wiki, and GPU-accelerated local AI (Ollama/WebUI).
 
 ---
 
