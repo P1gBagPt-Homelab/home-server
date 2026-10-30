@@ -32,6 +32,11 @@ Actionable, step-by-step walkthroughs to set up the system from scratch:
    * PowerShell disk mapping to protect Windows drives during installation.
    * ASUS PRIME Z370-A BIOS settings (`ErP Ready: Disabled`, AHCI mode).
 
+3. [**Guide 03: Ubuntu Server Installation & Custom Partitioning**](guides/03-ubuntu-server-installation.md)
+   * ASUS F8 boot menu walkthrough.
+   * Safe custom storage layout: `/boot/efi` isolation, root on Disk 3, `/data` on Disk 4.
+   * OpenSSH setup and initial headless boot verification.
+
 ---
 
 ## 📌 Architecture Highlights
