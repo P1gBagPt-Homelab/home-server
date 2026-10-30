@@ -37,6 +37,12 @@ Actionable, step-by-step walkthroughs to set up the system from scratch:
    * Safe custom storage layout: `/boot/efi` isolation, root on Disk 3, `/data` on Disk 4.
    * OpenSSH setup and initial headless boot verification.
 
+4. [**Guide 04: Post-Install Setup (NVIDIA GPU Drivers & Docker)**](guides/04-post-install-gpu-and-docker.md)
+   * 1-command NVIDIA driver setup (`ubuntu-drivers`) and `nvidia-smi` verification.
+   * Official Docker CE and Compose plugin installation.
+   * NVIDIA Container Toolkit setup for GPU-accelerated Docker containers.
+   * Storage permissions and folder structure initialization on `/data`.
+
 ---
 
 ## 📌 Architecture Highlights
