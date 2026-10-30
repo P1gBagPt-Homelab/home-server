@@ -4,30 +4,25 @@ This guide outlines the exact hardware needed to complete the hybrid gaming and 
 
 ---
 
-## 1. Network Card vs. Smart Power Switch (Crucial Distinction)
+## 1. Selected Hardware: WETEN / Tuya JH-PcPro
 
-* **Your current card (TP-Link Archer T4E AC1200)**:
-  * A standard PCIe WiFi **network interface card (NIC)**.
-  * Provides internet connectivity to the OS while the computer is turned on.
-  * **Cannot** turn the PC on, pulse motherboard pins, or initiate ACPI shutdowns when the computer is off.
-* **The device to purchase (PCIe Smart PC Remote Switch)**:
-  * An **IoT relay switch** on a PCIe bracket.
-  * Stays connected to your home 2.4 GHz WiFi even while the PC is powered down (using 3.3V standby).
-  * Physically connects to the motherboard `PWR_SW` and `RST_SW` headers using 2-pin jumper cables.
-  * Operates via the **Tuya / Smart Life** or **eWeLink** smartphone app.
+* **Device Selected**: **WETEN JH-PcPro (Tuya Smart / Smart Life PCIe Switch)**
+* **Platform**: Tuya IoT / Smart Life (iOS & Android)
+* **Connectivity**: 2.4 GHz Wi-Fi + Bluetooth BLE + 433 MHz RF
+* **Key Features**:
+  * Plugs into any PCIe slot (installed into `PCIEX1_4` on ASUS PRIME Z370-A).
+  * Direct 2-pin Y-splitter connection to motherboard `PWR_SW` and `RST_SW` pins.
+  * Preserves PC case front-panel button functionality.
+  * Includes a wireless 433 MHz desktop button for quick local physical control without opening the app or bending under the desk.
+  * No Zigbee bridge or hub required (connects directly to home router).
 
 ---
 
-## 2. Where to Buy
+## 2. Where to Buy & Alternative Links
 
-### Recommended Products:
-* **Amazon.es**: [Direct Search for Tuya PCIe PC Switch](https://www.amazon.es/s?k=tarjeta+pcie+encendido+pc+tuya) (~€15 – €22, Prime shipping).
-* **AliExpress**: [Direct Search for Tuya PCIe PC Switch](https://es.aliexpress.com/w/wholesale-tuya-pcie-power-switch.html) (~€8 – €12).
-
-### What Must Be in the Box:
-1. PCIe expansion card with standard full-height bracket (and low-profile if needed).
-2. External 2.4 GHz WiFi antenna.
-3. 2-pin motherboard Y-splitter cables (allows both the PCIe card and your physical PC case button to trigger power).
+* **Primary Purchase**: [Vinted Post: WETEN JH-PcPro](https://www.vinted.pt/items/10034093084-tuya-pcie-smart-power-switch-pc-draadloze-rf-433mhz-knop)
+* **Amazon.es Alternative**: [Direct Search for Tuya PCIe PC Switch](https://www.amazon.es/s?k=tarjeta+pcie+encendido+pc+tuya) (~€15 – €28).
+* **AliExpress Alternative**: [Direct Search for Tuya PCIe PC Switch](https://es.aliexpress.com/w/wholesale-tuya-pcie-power-switch.html) (~€8 – €14).
 
 ---
 
@@ -35,8 +30,8 @@ This guide outlines the exact hardware needed to complete the hybrid gaming and 
 
 | Hardware Item | Status | Purpose / Action |
 | :--- | :---: | :--- |
-| **PCIe Smart PC Switch Card** | 🛒 **Need to buy** | ~€15 on Amazon.es (Tuya / Smart Life compatible). |
-| **TP-Link Archer T4E** | Keep | Keep in `PCIEX1_3` for Windows WiFi if needed. |
+| **WETEN JH-PcPro PCIe Switch** | 🛒 **In Purchase (Vinted)** | Remote power ON/OFF via Tuya + 433MHz desk button. |
+| **TP-Link Archer T4E** | Keep | Kept in `PCIEX1_3` for Windows WiFi if needed. |
 | **Cat 6 Ethernet Cable** | Highly Recommended | Plug ASUS Intel I219-V LAN port directly into router for server & WireGuard stability. |
 | **2x SATA Data Cables** | Ready at home | Connect the 2 dedicated server disks to ASUS Z370-A SATA ports. |
 | **SATA Power Cables** | Ready at home | 2 free SATA power leads from power supply. |
@@ -52,11 +47,11 @@ To ensure optimal cooling for the ASUS ROG Strix RTX 2070:
 1. **`PCIEX16_1`**: ASUS ROG Strix RTX 2070 (Primary Graphics).
 2. **`PCIEX1_1` / `PCIEX1_2`**: Leave empty (covered or partially blocked by the 2.5-slot GPU cooler).
 3. **`PCIEX1_3`**: TP-Link Archer T4E AC1200 (WiFi Network Card).
-4. **`PCIEX1_4`**: PCIe Smart WiFi Power Switch (plenty of breathing room at the bottom of the case).
+4. **`PCIEX1_4`**: **WETEN JH-PcPro** (installed at the very bottom slot, keeping clear airflow for the GPU).
 
 ---
 
 ## 5. Critical BIOS Setting: ErP Ready
 
 * Location in ASUS BIOS: **Advanced > APM Configuration > ErP Ready** -> Set to **Disabled**.
-* *Why*: If ErP Ready is enabled, the motherboard cuts all 3.3V standby current to PCIe slots when powered off. Setting it to Disabled ensures the PCIe switch card stays connected to WiFi to listen for your power commands.
+* *Why*: If ErP Ready is enabled, the motherboard cuts all 3.3V standby current to PCIe slots upon shutdown. Setting it to Disabled ensures the WETEN card stays connected to WiFi to listen for your power commands.
