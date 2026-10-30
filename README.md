@@ -14,6 +14,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 * **Boot Management**: GRUB configured to auto-boot to **Linux Server** on remote power-on, with `grub-reboot` support for one-shot remote boots into Windows.
 * **Remote Power Control**: Internal **PCIe WiFi Power Switch Card** (Tuya / Smart Life / eWeLink) connected to motherboard `PWR_SW` pins. Provides safe one-tap ACPI graceful shutdowns and instant remote turn-ons.
 * **Remote Access**: Self-hosted WireGuard VPN (via `wg-easy` container) + Dynamic DNS (DDNS). No third-party network relays required.
+* **Workload Stack**: Docker & Docker Compose for self-hosted mini-projects with Dockge/Nginx Proxy Manager, prepped for GPU-accelerated local AI (Ollama/WebUI).
 
 ---
 
@@ -39,6 +40,12 @@ A documentation repository and operational guide for running a dual-purpose pers
    * Docker `docker-compose.yml` deployment for `wg-easy` (web dashboard + QR code clients).
    * End-to-end on-demand lifecycle diagram and remote SSH/App shutdown workflows.
 
+5. [**05. Docker Environment & Mini-Projects Architecture**](docs/05-docker-and-projects-environment.md)
+   * Structured directory layout for Docker Compose stacks on dedicated server storage.
+   * Core infrastructure (Dockge manager & Nginx Proxy Manager).
+   * Mini-project template with isolated database containers.
+   * Future AI readiness: NVIDIA Container Toolkit for running GPU-accelerated LLMs (Ollama + Open-WebUI).
+
 ---
 
 ## ⚡ Remote Operational Lifecycle
@@ -58,7 +65,7 @@ sequenceDiagram
     Linux->>Linux: GRUB auto-boots Server OS
     Linux->>WG: Docker auto-starts WireGuard & containers
     User->>WG: Connect WireGuard from Phone / Laptop
-    Note over User,Linux: Access files, media, containers securely
+    Note over User,Linux: Access mini projects, Docker UI, and files
     User->>App: Tap "Power Off" (or SSH: sudo poweroff)
     App->>Card: Sends power down signal
     Card->>Linux: Triggers ACPI Graceful Shutdown
