@@ -33,13 +33,13 @@ Uptime Kuma continuously monitors your containers, databases, and websites, send
        external: true
    ```
 6. In the **Domains** field, enter:  
-   `https://status.janus-server.duckdns.org`
+   `https://status.janux-lab.duckdns.org`
 7. Click **Deploy**.
 
 ---
 
 ### Configuring Monitors in Uptime Kuma:
-Open `https://status.janus-server.duckdns.org` and create your admin account, then add your core monitors:
+Open `https://status.janux-lab.duckdns.org` and create your admin account, then add your core monitors:
 
 | Monitor Name | Monitor Type | Target / Hostname |
 | :--- | :--- | :--- |
@@ -113,7 +113,7 @@ Netdata provides per-second live graphs of CPU temperatures, RAM usage, disk I/O
        external: true
    ```
 4. In the **Domains** field, enter:  
-   `https://netdata.janus-server.duckdns.org`
+   `https://netdata.janux-lab.duckdns.org`
    *(Or keep it private on `http://10.8.0.1:19999` accessible only over WireGuard).*
 5. Click **Deploy**.
 

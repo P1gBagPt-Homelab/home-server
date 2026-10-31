@@ -14,9 +14,13 @@ Before setting up WireGuard, ensure your home network satisfies these conditions
    * If your ISP uses CGNAT (Carrier-Grade NAT), incoming ports cannot be opened without requesting a public IPv4 from your ISP or using an IPv6 address.
 2. **Dynamic DNS (DDNS)**:
    * Most residential internet connections change IP addresses periodically.
-   * Register a free DDNS hostname (e.g., [DuckDNS](https://www.duckdns.org) or [No-IP](https://www.noip.com)) so your WireGuard client always finds your home router (e.g., `myserver.duckdns.org`).
-3. **Router Port Forwarding**:
-   * Forward **UDP port 51820** from your home router to your Linux Server's static internal local IP (e.g., `192.168.1.150`).
+   * Register a free DDNS hostname (e.g., [DuckDNS](https://www.duckdns.org) or [No-IP](https://www.noip.com)) so your WireGuard client always finds your home router (e.g., `janux-lab.duckdns.org`).
+3. **Router Port Forwarding (Vodafone Smart Router)**:
+   * Switch router mode to **Modo Expert**.
+   * Under **Internet** → **Port Mapping**, create a rule for device **`janus`**:
+     * Protocol: **UDP**
+     * Public Port / LAN Port: **`51820`**
+     * External Source IP: *Leave blank* (allows connections from any outside network)
 
 ---
 
@@ -26,17 +30,19 @@ The cleanest, most maintainable method is running **`wg-easy`** via Docker on yo
 
 ### `docker-compose.yml` for WireGuard Easy:
 
+Generate your bcrypt hash with `docker run --rm -it ghcr.io/wg-easy/wg-easy wgpw 'YourPassword'` and save it to `.env` (`PASSWORD_HASH='$2a$12$...'`):
+
 ```yaml
 services:
   wg-easy:
-    image: ghcr.io/wg-easy/wg-easy:latest
+    image: ghcr.io/wg-easy/wg-easy:14
     container_name: wg-easy
     restart: unless-stopped
     environment:
       # Your Dynamic DNS domain or public IP
-      - WG_HOST=your-ddns-subdomain.duckdns.org
-      # Web UI Password (bcrypt hashed or plain text)
-      - PASSWORD=ChooseAStrongPassword
+      - WG_HOST=janux-lab.duckdns.org
+      # Web UI Password Hash (loaded from .env to prevent $ expansion issues)
+      - PASSWORD_HASH=${PASSWORD_HASH}
       # WireGuard Port
       - WG_PORT=51820
       # Web UI Port
@@ -45,7 +51,7 @@ services:
       - WG_DEFAULT_DNS=1.1.1.1,8.8.8.8
       - WG_ALLOWED_IPS=192.168.1.0/24, 10.8.0.0/24
     volumes:
-      - /etc/wireguard-data:/etc/wireguard
+      - /data/volumes/wireguard:/etc/wireguard
     ports:
       - "51820:51820/udp"
       - "51821:51821/tcp"

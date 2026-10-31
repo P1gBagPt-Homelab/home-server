@@ -6,54 +6,81 @@ This guide walks you through setting up **Dynamic DNS (DuckDNS)**, forwarding th
 
 ## Step 1: Set Up Free Dynamic DNS (DuckDNS)
 
-Since home residential IP addresses periodically change, Dynamic DNS gives your home server a permanent hostname (e.g., `janus-server.duckdns.org`):
+Since home residential IP addresses periodically change, Dynamic DNS gives your home server a permanent hostname (`janux-lab.duckdns.org`):
 
 1. Go to [https://www.duckdns.org](https://www.duckdns.org) and log in (via GitHub, Google, or Reddit).
-2. Under **Domains**, pick a unique subdomain (e.g., `janus-server` or `janus-daniel`) and click **add domain**.
+2. Under **Domains**, register your domain `janux-lab` and click **add domain**.
 3. Note your **DuckDNS Token** displayed at the top of the page.
 
 ---
 
-## Step 2: Router Port Forwarding & Static IP
+## Step 2: Router Port Forwarding & Static IP (Vodafone Smart Router)
 
 To allow encrypted WireGuard VPN packets through your home router:
 
-1. Log into your home router's admin panel (usually `192.168.1.1` or `192.168.1.254`).
-2. **Assign Static DHCP Lease**:
-   * Find your Ubuntu Server (MAC address of your Intel I219-V port) and bind it to a fixed local IP (e.g., `192.168.1.150`).
-3. **Port Forwarding Rule**:
-   * **Service Name**: `WireGuard`
-   * **Protocol**: **`UDP`** *(Crucial: must be UDP, not TCP)*
-   * **External / WAN Port**: `51820`
-   * **Internal / LAN Port**: `51820`
-   * **Internal IP**: `192.168.1.150` (your server's IP)
-4. Save and apply router settings.
+1. **Log in to Router Admin Panel**:
+   * Open your browser and navigate to `http://192.168.1.1`.
+2. **Switch to Expert Mode**:
+   * In the top-right corner dropdown, select **`Modo Expert`**.
+3. **Configure Port Mapping (Port Forwarding)**:
+   * In the top navigation bar, click **`Internet`**.
+   * In the left sidebar, select **`Port Mapping`**.
+   * In the upper **Port Mapping** section (above *Port Triggering*), click the purple **`(+)`** button.
+   * Configure the modal fields:
+     * **Nome**: `WireGuard`
+     * **Serviço**: `Selecionar...` (leave default / custom)
+     * **Protocolo**: **`UDP`** *(Crucial: must be UDP, not TCP)*
+     * **Equipamento**: Select **`janus`** *(auto-populates the **IP da LAN**)*
+     * **Endereço IP de origem externa**: Leave completely empty *(allows remote access from any mobile or laptop IP outside your home)*
+     * **Porta pública**: `51820`
+     * **Porta LAN**: `51820`
+   * Click **Confirmar** to save and activate the mapping rule.
+4. **Ensure Static IP Reservation**:
+   * In the top menu, go to **`Definições`** → **`Rede Local (LAN)`** (or click the `(i)` info icon on `janus` from the **`Visão geral`** dashboard) to verify that `janus` has a permanent DHCP reservation so its local IP never changes.
 
 ---
 
 ## Step 3: Deploy WireGuard Gateway (`wg-easy`)
 
-Connect via SSH to your server (`ssh daniel@192.168.1.150`):
+Connect via SSH to your server (`ssh daniel@<your-server-ip>`):
 
-```bash
-mkdir -p /data/compose/wireguard /data/volumes/wireguard
-cd /data/compose/wireguard
-nano docker-compose.yml
-```
+1. **Generate your admin password hash**:
+   Choose a strong admin password and generate its bcrypt hash:
+   ```bash
+   docker run --rm -it ghcr.io/wg-easy/wg-easy wgpw 'YourChosenPassword'
+   ```
+   *(Keep your plaintext password handy for web login, and copy the full output line `PASSWORD_HASH='$2a$12$...'`)*
+
+2. **Store the hash safely in a `.env` file**:
+   Using a `.env` file ensures Docker Compose doesn't corrupt the `$` signs inside the bcrypt hash:
+   ```bash
+   mkdir -p /data/compose/wireguard /data/volumes/wireguard
+   cd /data/compose/wireguard
+   nano .env
+   ```
+   Paste the line output by `wgpw`:
+   ```env
+   PASSWORD_HASH='$2a$12$your_exact_hash_from_wgpw'
+   ```
+
+3. **Create the compose configuration**:
+   ```bash
+   nano docker-compose.yml
+   ```
 
 Paste the following `docker-compose.yml`:
 
 ```yaml
 services:
   wg-easy:
-    image: ghcr.io/wg-easy/wg-easy:latest
+    image: ghcr.io/wg-easy/wg-easy:14
     container_name: wg-easy
     restart: unless-stopped
     environment:
       # Your DuckDNS Domain
-      - WG_HOST=janus-server.duckdns.org
-      # Set a strong password for the WireGuard Web Admin
-      - PASSWORD=YourSecureAdminPassword
+      - WG_HOST=janux-lab.duckdns.org
+      # Loaded cleanly from .env (no character escaping headaches)
+      - PASSWORD_HASH=${PASSWORD_HASH}
       - WG_PORT=51820
       - WG_DEFAULT_ADDRESS=10.8.0.x
       - WG_DEFAULT_DNS=1.1.1.1,8.8.8.8
@@ -76,19 +103,25 @@ Save and exit (`Ctrl + O`, `Enter`, `Ctrl + X`), then start WireGuard:
 docker compose up -d
 ```
 
+Verify that the container is healthy:
+```bash
+docker ps
+```
+
 ---
 
 ## Step 4: Configure WireGuard Clients (Phone & Laptop)
 
-1. Open your browser on any home device and navigate to:  
-   👉 `http://192.168.1.150:51821`
-2. Log in using the password you set in the compose file.
-3. **Add Mobile Phone Client**:
+1. Find your server's local IP address if needed (`hostname -I`).
+2. Open your browser on any home device and navigate to:  
+   👉 `http://<YOUR_SERVER_IP>:51821`  *(Make sure it is `http://` and not `https://`)*
+3. Log in using your **chosen plaintext password** (the one you passed to `wgpw`).
+4. **Add Mobile Phone Client**:
    * Click **"New Client"**, name it `Phone`, and click **Create**.
    * Click the **QR code** icon next to `Phone`.
    * Open the official **WireGuard App** on iOS or Android.
    * Tap **"+" > Scan QR Code**, scan the screen, name the tunnel `Janus`, and save.
-4. **Add Laptop Client**:
+5. **Add Laptop Client**:
    * Click **"New Client"**, name it `Laptop`.
    * Click **Download** to get the `.conf` profile.
    * Import it into the official WireGuard desktop client.

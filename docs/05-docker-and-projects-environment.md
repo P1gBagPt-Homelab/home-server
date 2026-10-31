@@ -39,7 +39,7 @@ Coolify provides Git-based automated deployments, 1-click database provisioning,
 2. **Full-Stack on Your Own Hardware**:
    * Unlike cloud Vercel (which only hosts stateless frontends), Coolify on Janus hosts your frontends, backend APIs, persistent databases, and file storage on your dedicated server disks.
 3. **No More Manual Proxy Configuration**:
-   * Coolify has an embedded **Traefik** reverse proxy. Whenever you deploy a project or database, you simply enter your domain (e.g., `https://myapp.janus-server.duckdns.org`), and Coolify provisions SSL and handles routing automatically.
+   * Coolify has an embedded **Traefik** reverse proxy. Whenever you deploy a project or database, you simply enter your domain (e.g., `https://myapp.janux-lab.duckdns.org`), and Coolify provisions SSL and handles routing automatically.
 
 ---
 

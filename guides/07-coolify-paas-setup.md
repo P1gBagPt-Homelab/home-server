@@ -76,7 +76,7 @@ services:
     container_name: docmost
     restart: unless-stopped
     environment:
-      - APP_URL=https://docs.janus-server.duckdns.org
+      - APP_URL=https://docs.janux-lab.duckdns.org
       - APP_SECRET=replace_with_32_random_characters_string
       - DATABASE_URL=postgresql://postgres:password@janus-postgres:5432/docmost?sslmode=disable
       - REDIS_URL=redis://janus-redis:6379/0
@@ -88,7 +88,7 @@ volumes:
 ```
 
 4. In the **Domains** field in Coolify, enter:  
-   `https://docs.janus-server.duckdns.org`
+   `https://docs.janux-lab.duckdns.org`
 5. Click **Deploy**.  
    *Coolify starts Docmost, points the domain to it, and automatically provisions a Let's Encrypt SSL certificate.*
 
@@ -107,7 +107,7 @@ Whenever you build a new mini project on your laptop (e.g., Next.js, React, Node
 2. In Coolify, click **+ New Resource > Application > GitHub App**.
 3. Select your repository and the branch (e.g. `main`).
 4. Enter the domain you want:
-   `https://myproject.janus-server.duckdns.org`
+   `https://myproject.janux-lab.duckdns.org`
 5. **Connect to PostgreSQL/Redis**:
    * Under **Environment Variables**, you can reference your database:
      `DATABASE_URL=postgresql://postgres:password@janus-postgres:5432/myproject_db`
