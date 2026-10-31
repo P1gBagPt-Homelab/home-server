@@ -31,21 +31,23 @@ In the same Administrator PowerShell window, run:
 Get-PhysicalDisk | Select-Object DeviceId, FriendlyName, MediaType, @{Name="Size (GB)";Expression={[math]::round($_.Size/1GB, 2)}} | Format-Table -AutoSize
 ```
 
-### Fill Out Your Disk Identification Card:
-Use the output from PowerShell or Windows **Disk Management** (`Win + X > Disk Management`) to note your 4 disks:
+### Your Verified Physical Disk Record:
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        PHYSICAL DISK RECORD                            │
-├─────────┬──────────────────────┬───────────┬───────────────────────────┤
-│ DISK ID │ MODEL / FRIENDLY NAME│ SIZE (GB) │ ASSIGNED ROLE             │
-├─────────┼──────────────────────┼───────────┼───────────────────────────┤
-│ Disk 0  │ [e.g. Samsung 970]   │ [e.g. 500]│ Windows 10/11 OS (DO NOT TOUCH)
-│ Disk 1  │ [e.g. Crucial MX500] │ [e.g. 1000│ Game Library     (DO NOT TOUCH)
-│ Disk 2  │ [e.g. WD Blue 2TB]   │ [e.g. 2000│ Server OS (Disk 3) [FORMAT EXT4]
-│ Disk 3  │ [e.g. Seagate 2TB]   │ [e.g. 2000│ Server Data (Disk 4) [FORMAT EXT4]
-└─────────┴──────────────────────┴───────────┴───────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                               PROJECT JANUS DISK RECORD                                │
+├─────────┬────────────────────────────┬───────────┬─────────────────────────────────────┤
+│ DISK ID │ MODEL / FRIENDLY NAME      │ SIZE (GB) │ ASSIGNED ROLE                       │
+├─────────┼────────────────────────────┼───────────┼─────────────────────────────────────┤
+│ Disk 3  │ WD Blue SN570 1TB NVMe     │ 931.51 GB │ Windows 10/11 Gaming (DO NOT TOUCH) │
+│ Disk 0  │ BLUERAY SSD                │ 223.57 GB │ Pooled SSD #1 (Join into LVM ~456GB)│
+│ Disk 1  │ Samsung SSD 850 EVO 250GB  │ 232.89 GB │ Pooled SSD #2 (Join into LVM ~456GB)│
+│ Disk 2  │ SAMSUNG HD103SJ 1TB        │ 931.51 GB │ Server Cold Storage & Backups (HDD) │
+└─────────┴────────────────────────────┴───────────┴─────────────────────────────────────┘
 ```
+
+> [!CAUTION]
+> In the Ubuntu installer, **NEVER select the WD Blue SN570 (931.51 GB)**! That is your Windows gaming system drive.
 
 > [!TIP]
 > Take a photo of this table or write it on a piece of paper. When the Ubuntu installer asks where to install, you will match the drive by its exact model name and capacity.
