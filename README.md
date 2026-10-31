@@ -16,7 +16,9 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **GPU** | ASUS ROG Strix RTX 2070 (8GB VRAM) | Windows Gaming + Linux CUDA acceleration for AI models up to 8B params. |
 | **Motherboard** | ASUS PRIME Z370-A | Intel I219-V Gigabit LAN + dedicated PCIe slots for WiFi power switch. |
 | **RAM** | 40 GB DDR4 3200 MHz | Massive memory pool for multitasking 15+ containers & in-memory databases. |
-| **Storage** | 4 Physical Disks | 2 Disks dedicated to Windows/Games; 2 Disks dedicated to Server OS & data. |
+| **Storage 1 (NVMe)**| WD Blue SN570 1TB (~931 GB) | **Windows 10/11 Gaming & Personal OS** (100% Isolated / Untouched). |
+| **Storage 2 (SSDs)**| BLUERAY (224GB) + Samsung 850 EVO (233GB)| **Joined into single ~456 GB LVM Volume** (Ubuntu Server, Coolify, Docker).|
+| **Storage 3 (HDD)** | SAMSUNG HD103SJ 1TB (~931 GB) | **Server Cold Storage & Local Backups** (`/data/storage`). |
 
 *Detailed pinout and hardware analysis: [**Hardware Specs & Motherboard Guide**](docs/hardware-specs.md)*.
 
