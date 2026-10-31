@@ -44,44 +44,50 @@ This guide walks you through installing **Ubuntu Server 24.04 LTS** with custom 
    * Locate the 2 Windows/Gaming drives -> **DO NOT TOUCH THEM**.
 
 ```
-┌────────────────────────────────────────────────────────┐
-│ CUSTOM STORAGE LAYOUT MAPPING                          │
-├────────────────────────────────────────────────────────┤
-│ /dev/nvme0n1 [Windows OS SSD]     ──> LEAVE UNTOUCHED  │
-│ /dev/sda     [Game Library Drive] ──> LEAVE UNTOUCHED  │
-│                                                        │
-│ /dev/sdb     [Server Disk 3]      ──> TARGET FOR OS    │
-│   ├── Partition 1: 1024 MB (FAT32) -> Mount: /boot/efi │
-│   └── Partition 2: Remaining (EXT4)-> Mount: /         │
-│                                                        │
-│ /dev/sdc     [Server Disk 4]      ──> TARGET FOR DATA  │
-│   └── Partition 1: Entire Disk(EXT4)->Mount: /data     │
-└────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│ EXACT CUSTOM STORAGE LAYOUT MAPPING FOR JANUS                          │
+├────────────────────────────────────────────────────────────────────────┤
+│ /dev/nvme0n1 [WD Blue SN570 1TB NVMe]   ──> DO NOT TOUCH (Windows)     │
+│                                                                        │
+│ /dev/sdb     [BLUERAY SSD ~224GB]       ──> SERVER FAST POOL (~456 GB) │
+│ /dev/sdc     [Samsung 850 EVO ~233GB]   ──> (LVM Volume Group: vg_janus│
+│   ├── Partition 1 (on sdb): 1024 MB (FAT32) -> Mount: /boot/efi       │
+│   └── Logical Volume (spanning sdb + sdc)   -> Mount: / (Root & Docker)│
+│                                                                        │
+│ /dev/sda     [SAMSUNG HD103SJ 1TB HDD]  ──> Mount: /data/storage       │
+│   └── Single ext4 partition (Full 1TB)  -> (Backups, Media, Archives)  │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Partitioning Server Disk 3 (The OS Drive):
-1. Navigate to your selected **Server Disk 3**, press `Enter`, and select **"Use as Boot Device"** or **"Add GPT Partition"**.
-2. **Create EFI Partition**:
-   * Select **Add Partition**.
-   * Size: `1G` (or `1024M`).
-   * Format: `fat32` (or `boot/efi`).
-   * Mount: `/boot/efi`.
-   * Select **Create**.
-3. **Create Root Partition**:
-   * Select the remaining free space on Server Disk 3.
-   * Select **Add Partition**.
-   * Size: Leave blank (uses all remaining space).
-   * Format: `ext4`.
-   * Mount: `/` (Root).
-   * Select **Create**.
+### Partitioning Steps:
 
-### Partitioning Server Disk 4 (The Data & Projects Drive):
-1. Navigate to your selected **Server Disk 4**, press `Enter`.
-2. Select **Add Partition**:
-   * Size: Leave blank (uses full disk capacity).
-   * Format: `ext4`.
-   * Mount: Type `/data`.
-   * Select **Create**.
+#### 1. Setup Boot EFI (on BLUERAY SSD):
+* Select the **BLUERAY SSD** (or whichever is the first server SSD).
+* Add Partition:
+  * **Size**: `1G` (or `1024M`)
+  * **Format**: `boot/efi` (or `fat32`)
+  * **Mount**: `/boot/efi`
+* Leave the remaining space on that SSD unformatted for LVM.
+
+#### 2. Pool Both SSDs into LVM (~456 GB):
+* On the installer screen, select **"Create Volume Group (LVM)"**:
+  * Name: `vg_janus`
+  * Select the free space on **BLUERAY SSD** AND the free space on **Samsung 850 EVO**.
+* Under `vg_janus`, select **"Create Logical Volume"**:
+  * Name: `lv_root`
+  * Size: Leave blank (uses all ~456 GB of both combined SSDs).
+  * Format: `ext4`
+  * Mount: `/` (Root)
+
+#### 3. Format the 1TB HDD (SAMSUNG HD103SJ):
+* Select the **SAMSUNG HD103SJ 1TB HDD**:
+* Add Partition:
+  * Size: Maximum available (~931 GB)
+  * Format: `ext4`
+  * Mount: `/data/storage`
+
+> [!CAUTION]
+> Double check that the **WD Blue SN570 1TB NVMe** has **NO mount points** and **NO changes** scheduled. It holds your Windows OS and games!
 
 ### Verification:
 * Inspect the summary screen: Confirm that your Windows drive shows **no changes** and has no mount points assigned.
