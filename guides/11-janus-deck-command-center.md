@@ -4,21 +4,23 @@
 > * **Project Repo**: [`P1gBagPt-Homelab/JanusDeck`](https://github.com/P1gBagPt-Homelab/JanusDeck)
 > * **Target URL**: `https://control.janus-lab.duckdns.org` (and `http://192.168.1.68:8080`)
 > * **Platform**: Coolify PaaS (Docker Compose)
-> * **Stack**: FastAPI (Python 3.12) + Svelte 5 (Runes, TypeScript, Tailwind CSS)
-> * **Core Features**: Real-time Hardware Telemetry (RTX 2070, i7-8700K, 40GB RAM), Mandatory Master PIN Security Gate with Paste & Autofill Support, 5-Second Countdown Abort Gate, One-Shot Boot to Windows Gaming Mode, and Automated CI/CD via GitHub Actions Organization Runner.
+> * **Stack**: FastAPI (Python 3.12), SQLAlchemy 2.0 (async), asyncpg + Svelte 5 (Runes, TypeScript, Tailwind CSS)
+> * **Database**: Dedicated `janusdeck` database on central shared PostgreSQL 18
+> * **Core Features**: Real-time Hardware Telemetry (RTX 2070, i7-8700K, 40GB RAM), Mandatory Master PIN Security Gate with Paste & Autofill Support, 5-Second Countdown Abort Gate, One-Shot Boot to Windows Gaming Mode, Dynamic Service Directory CRUD, and Automated CI/CD via GitHub Actions Organization Runner.
 
 ---
 
 ## 1. Overview & Purpose
 
-**JanusDeck** is the open-source management portal built specifically for Project Janus's dual-boot architecture. It serves three primary functions:
+**JanusDeck** is the open-source management portal built specifically for Project Janus's dual-boot architecture. It serves four primary functions:
 
-1. **Central Service Launcher**: A clean, single-screen dashboard with live availability badges for all services hosted on Janus (Coolify, Docmost, Uptime Kuma, Netdata, WireGuard).
+1. **Dynamic Homelab Service Directory**: An interactive dashboard with automated HTTP availability checks for all services hosted on Janus (Coolify, Docmost, Uptime Kuma, Netdata, WireGuard, Vaultwarden). Services are stored persistently in PostgreSQL 18 with a built-in Svelte 5 modal to add, edit, or delete links and icons directly from the UI.
 2. **Live Hardware Telemetry**: Streams real-time Intel i7-8700K load and thermals, 40GB DDR4 memory usage, NVMe/HDD disk capacity, and ASUS ROG Strix RTX 2070 GPU stats (VRAM, temperature, fan speed) via Server-Sent Events (SSE).
 3. **Remote Dual-Boot & Power Controls**: Securely commands the physical machine to:
    * **Reboot Ubuntu Server** (`systemctl reboot`).
    * **Graceful ACPI Shutdown** (`systemctl poweroff`).
    * **Switch to Windows Gaming Mode** (`grub-reboot "Windows Boot Manager (on /dev/nvme0n1p1)" && reboot`).
+4. **Initial Data Seeder**: Automatically imports existing static services from `config.yaml` on first startup if the database table is empty, ensuring zero data loss during transitions.
 
 ---
 
@@ -97,6 +99,8 @@ When ready to deploy on Janus via Coolify:
        pid: host
        ports:
          - "8080:8080"
+       networks:
+         - default
        volumes:
          - ./config.yaml:/app/config.yaml:ro
          - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket:ro
@@ -108,8 +112,18 @@ When ready to deploy on Janus via Coolify:
                - driver: nvidia
                  count: all
                  capabilities: [gpu]
+
+   networks:
+     default:
+       name: coolify
+       external: true
    ```
-4. Assign domain `https://control.janus-lab.duckdns.org` in Coolify to enable automatic Let's Encrypt SSL.
+4. In `config.yaml`, configure the database connection to the shared PostgreSQL 18 container:
+   ```yaml
+   database:
+     url: "postgresql+asyncpg://janusdeck:YOUR_PASSWORD@o4nipot4qcoaskqwss3zf6bq:5432/janusdeck"
+   ```
+5. Assign domain `https://control.janus-lab.duckdns.org` in Coolify to enable automatic Let's Encrypt SSL.
 
 ---
 

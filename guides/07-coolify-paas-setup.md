@@ -82,7 +82,7 @@ Inside the Coolify dashboard, create a project (e.g., named **`Core Services`** 
 
 ### 3. PostgreSQL Administration: Adding Databases & Users for Future Apps
 
-When adding new applications (e.g. **Vaultwarden**, custom APIs, Nextcloud, Immich) to your home server, you should **never** use the default `postgres` superuser or dump all tables into the default `postgres` database. Instead, follow the standard multi-tenant pattern: **one isolated database and dedicated user per application**.
+When adding new applications (e.g. **JanusDeck**, **Vaultwarden**, custom APIs, Nextcloud, Immich) to your home server, you should **never** use the default `postgres` superuser or dump all tables into the default `postgres` database. Instead, follow the standard multi-tenant pattern: **one isolated database and dedicated user per application**.
 
 > [!CAUTION]
 > **Important: Identify the Correct PostgreSQL Container**:
@@ -94,18 +94,27 @@ When adding new applications (e.g. **Vaultwarden**, custom APIs, Nextcloud, Immi
 > docker ps --filter "ancestor=postgres:18-alpine" --format "table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}"
 > ```
 
-#### Option A: Interactive PostgreSQL Shell
+#### Step 1: Generate a Secure Password
+Generate a strong, cryptographically secure 24-character password before creating the user:
+```bash
+openssl rand -base64 24
+```
+*(Copy the generated password to your password manager or Bitwarden/Vaultwarden)*.
 
+---
+
+#### Step 2: Provision Database & User
+
+##### Option A: Interactive PostgreSQL Shell
 1. Open `psql` directly inside the container as the `postgres` user:
    ```bash
-   docker exec -it <POSTGRES_CONTAINER_ID_OR_NAME> psql -U postgres
+   docker exec -it o4nipot4qcoaskqwss3zf6bq psql -U postgres
    ```
-   *(For example: `docker exec -it o4nipot4qcoaskqwss3zf6bq psql -U postgres`)*
 
-2. Run the SQL provisioning commands:
+2. Run the SQL provisioning commands (replace `<app_user>`, `<app_db>`, and paste your generated password):
    ```sql
    -- 1. Create the dedicated user
-   CREATE USER <app_user> WITH ENCRYPTED PASSWORD 'YourSecurePasswordHere';
+   CREATE USER <app_user> WITH ENCRYPTED PASSWORD 'PasteGeneratedPasswordHere';
 
    -- 2. Create the dedicated database owned by that user
    CREATE DATABASE <app_db> OWNER <app_user>;
@@ -127,15 +136,12 @@ When adding new applications (e.g. **Vaultwarden**, custom APIs, Nextcloud, Immi
    \q
    ```
 
----
-
-#### Option B: Automated One-Liner (Terminal Scripting)
-
-You can run the entire setup in a single non-interactive command from your host terminal (replace container name, username, password, and database name):
+##### Option B: Automated One-Liner (Terminal Scripting)
+You can run the entire setup in a single non-interactive command from your host terminal:
 
 ```bash
 docker exec -i o4nipot4qcoaskqwss3zf6bq psql -U postgres << 'EOF'
-CREATE USER myapp WITH ENCRYPTED PASSWORD 'SuperSecretPassword123';
+CREATE USER myapp WITH ENCRYPTED PASSWORD 'PasteGeneratedPasswordHere';
 CREATE DATABASE myapp OWNER myapp;
 GRANT ALL PRIVILEGES ON DATABASE myapp TO myapp;
 \c myapp
@@ -147,20 +153,53 @@ EOF
 
 ---
 
-#### Connecting the New Application
+#### Step 3: Managing & Inspecting Databases
+
+Use these commands directly from your terminal to inspect and manage the shared PostgreSQL 18 instance:
+
+* **List all databases with sizes & owners**:
+  ```bash
+  docker exec -it o4nipot4qcoaskqwss3zf6bq psql -U postgres -c "\l+"
+  ```
+
+* **List all users, roles & attributes**:
+  ```bash
+  docker exec -it o4nipot4qcoaskqwss3zf6bq psql -U postgres -c "\du"
+  ```
+
+* **Inspect tables in a specific database** (e.g. `janusdeck`):
+  ```bash
+  docker exec -it o4nipot4qcoaskqwss3zf6bq psql -U postgres -d janusdeck -c "\dt"
+  ```
+
+* **Reset / change a user's password**:
+  ```bash
+  docker exec -it o4nipot4qcoaskqwss3zf6bq psql -U postgres -c "ALTER USER <app_user> WITH ENCRYPTED PASSWORD 'NewPasswordHere';"
+  ```
+
+---
+
+#### Step 4: Connecting Applications to Shared PostgreSQL
 
 1. **Internal Connection String (`DATABASE_URL`)**:
-   Construct the database URL using the PostgreSQL container name or Coolify service name:
+   Construct the database URL using the PostgreSQL container name on the internal `coolify` network:
    ```text
-   DATABASE_URL=postgresql://<app_user>:<app_password>@<POSTGRES_CONTAINER_NAME>:5432/<app_db>
+   DATABASE_URL=postgresql://<app_user>:<app_password>@o4nipot4qcoaskqwss3zf6bq:5432/<app_db>
    ```
-   *Example for Vaultwarden:*
+   *Note for Python / SQLAlchemy async applications (like JanusDeck)*: prefix with `postgresql+asyncpg://`:
    ```text
-   DATABASE_URL=postgresql://vaultwarden:SuperSecretPassword123@o4nipot4qcoaskqwss3zf6bq:5432/vaultwarden
+   DATABASE_URL=postgresql+asyncpg://<app_user>:<app_password>@o4nipot4qcoaskqwss3zf6bq:5432/<app_db>
    ```
 
-2. **Docker Network Requirement**:
-   For the application container to resolve the database container's hostname, it must be attached to the shared `coolify` Docker network:
+2. **Current Multi-Tenant Databases on Project Janus**:
+   | Application | Database Name | User | Notes / Documentation |
+   | :--- | :--- | :--- | :--- |
+   | **Docmost** | `postgres` | `postgres` | Initial default database |
+   | **Vaultwarden** | `vaultwarden` | `vaultwarden` | Dedicated user & database ([Section 6](#6-deploying-vaultwarden-bitwarden-password-manager)) |
+   | **JanusDeck** | `janusdeck` | `janusdeck` | Dedicated user & database for dynamic services ([Guide 11](11-janus-deck-command-center.md)) |
+
+3. **Docker Network Requirement**:
+   For the application container to resolve `o4nipot4qcoaskqwss3zf6bq`, it must be attached to the shared `coolify` Docker network:
    ```yaml
    networks:
      default:
