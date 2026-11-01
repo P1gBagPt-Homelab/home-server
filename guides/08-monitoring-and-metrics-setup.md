@@ -38,6 +38,7 @@ Open `https://status.janus-lab.duckdns.org` (or `http://192.168.1.68:3001`) and 
 | :--- | :--- | :--- |
 | **Docmost Wiki** | HTTP(s) | `https://docs.janus-lab.duckdns.org` (or `http://docmost:3000`) |
 | **Coolify Dashboard** | HTTP(s) | `http://192.168.1.68:8000` |
+| **Netdata Hardware Agent** | HTTP(s) | `http://192.168.1.68:19999` (or `http://netdata:19999`) |
 | **PostgreSQL Database** | TCP Port | Hostname: `<POSTGRES_INTERNAL_HOSTNAME>` (e.g. `o4nipot4qcoaskqwss3zf6bq`), Port: `5432` |
 | **Redis Cache** | TCP Port | Hostname: `<REDIS_INTERNAL_HOSTNAME>` (e.g. `owc6dm4qwd4lm7q37pvoibh0`), Port: `6379` |
 | **Home Router Internet** | Ping | `1.1.1.1` (or `8.8.8.8`) |
