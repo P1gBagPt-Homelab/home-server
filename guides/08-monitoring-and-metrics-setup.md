@@ -8,12 +8,10 @@ This guide walks you through deploying **Uptime Kuma** (for service health check
 
 Uptime Kuma continuously monitors your containers, databases, and websites, sending an alert to your phone within seconds if any service crashes.
 
-### Deployment in Coolify:
-1. Open Coolify (`http://10.8.0.1:8000`).
-2. Go to **Projects > Default > Production > + New Resource**.
-3. Select **Docker Compose** (or 1-Click Service if listed).
-4. Name it `Uptime-Kuma`.
-5. Configuration:
+1. In Coolify (`Core Services` or `Monitoring`), click **+ New Resource > Docker Compose**.
+2. Name it `Uptime-Kuma`.
+3. In **Service details**, ensure **Network attachment** is set to **`Attach to predefined network`**.
+4. Paste the configuration:
    ```yaml
    services:
      uptime-kuma:
@@ -21,20 +19,13 @@ Uptime Kuma continuously monitors your containers, databases, and websites, send
        container_name: uptime-kuma
        restart: unless-stopped
        volumes:
-         - uptime-kuma-data:/app/data
-       networks:
-         - server-net
-
-   volumes:
-     uptime-kuma-data:
-
-   networks:
-     server-net:
-       external: true
+         - /data/volumes/uptime-kuma:/app/data
+       ports:
+         - "3001:3001"
    ```
-6. In the **Domains** field, enter:  
-   `https://status.janus-lab.duckdns.org`
-7. Click **Deploy**.
+5. In **Domains**, add:  
+   `https://status.janus-lab.duckdns.org` (Port: `3001`).
+6. Click **Deploy**.
 
 ---
 
@@ -100,17 +91,11 @@ Netdata provides per-second live graphs of CPU temperatures, RAM usage, disk I/O
                - driver: nvidia
                  count: all
                  capabilities: [gpu]
-       networks:
-         - server-net
 
    volumes:
      netdataconfig:
      netdatalib:
      netdatacache:
-
-   networks:
-     server-net:
-       external: true
    ```
 4. In the **Domains** field, enter:  
    `https://netdata.janus-lab.duckdns.org`
