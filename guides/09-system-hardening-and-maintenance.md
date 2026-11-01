@@ -61,15 +61,18 @@ Block all uninvited incoming traffic by default, only opening the exact ports ne
    # 1. SSH Management
    sudo ufw allow 22/tcp comment 'SSH Remote Access'
 
-   # 2. WireGuard VPN (Encrypted Tunnel)
+   # 2. WireGuard VPN & Web Dashboard
    sudo ufw allow 51820/udp comment 'WireGuard VPN'
+   sudo ufw allow 51821/tcp comment 'WireGuard Web UI'
 
    # 3. Web & Traefik Reverse Proxy (Coolify / Docmost)
    sudo ufw allow 80/tcp comment 'HTTP Web Traffic'
    sudo ufw allow 443/tcp comment 'HTTPS Encrypted Web'
 
-   # 4. Coolify Web Dashboard
+   # 4. Management & Telemetry Dashboards
    sudo ufw allow 8000/tcp comment 'Coolify Dashboard'
+   sudo ufw allow 19999/tcp comment 'Netdata Telemetry'
+   sudo ufw allow 3001/tcp comment 'Uptime Kuma'
    ```
 
 3. **Enable the firewall**:
