@@ -39,6 +39,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **08** | [Monitoring Stack](guides/08-monitoring-and-metrics-setup.md) | ✅ Completed | Uptime Kuma v2 (`status.janus-lab`), Netdata GPU metrics |
 | **09** | [System Hardening](guides/09-system-hardening-and-maintenance.md) | ✅ Completed | RTC clock sync (`timedatectl`), UFW, Fail2ban, unattended-upgrades |
 | **10** | [Automated Backups](guides/10-automated-backups-and-recovery.md) | ✅ Completed | Rclone Crypt AES-256 to 5TB Google Drive, automated snapshots |
+| **11** | [JanusDeck Portal](guides/11-janus-deck-command-center.md) | 📋 Planned | Service hub, RTX 2070 telemetry, PIN power & Windows switch |
 
 ---
 
@@ -98,6 +99,12 @@ A documentation repository and operational guide for running a dual-purpose pers
     * PostgreSQL database dumps, Docmost wiki storage, and Docker volumes.
     * Client-side zero-knowledge encryption via Rclone Crypt (Google cannot scan your files).
     * 60-day cloud retention and 5-minute disaster recovery protocol.
+
+11. [**Guide 11: JanusDeck Command Center & Remote Management Portal**](guides/11-janus-deck-command-center.md)
+    * Standalone open-source web dashboard deployed via Coolify (`control.janus-lab.duckdns.org`).
+    * Real-time hardware telemetry streaming: Intel i7-8700K CPU, 40GB RAM, NVMe/HDD storage, and RTX 2070 GPU.
+    * PIN-guarded physical host actions: graceful shutdown, reboot, and one-click remote switch to Windows gaming mode (`grub-reboot`).
+    * Unified launcher for all Janus services with live availability health checks.
 
 ---
 
