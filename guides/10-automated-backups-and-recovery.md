@@ -113,16 +113,22 @@ mkdir -p "$TEMP_DIR/databases"
 mkdir -p "$TEMP_DIR/volumes"
 
 # 2. Dump all PostgreSQL databases (Docmost, mini-projects)
-if docker ps --format '{{.Names}}' | grep -q "postgres"; then
-    echo "Dumping PostgreSQL databases..."
-    docker exec -t postgres pg_dumpall -U admin > "$TEMP_DIR/databases/all_databases.sql"
+POSTGRES_CONTAINER=$(docker ps --filter "name=postgres" --format '{{.Names}}' | head -n 1)
+if [ -z "$POSTGRES_CONTAINER" ]; then
+    POSTGRES_CONTAINER=$(docker ps --filter "ancestor=postgres:18-alpine" --format '{{.Names}}' | head -n 1)
+fi
+
+if [ -n "$POSTGRES_CONTAINER" ]; then
+    echo "Dumping PostgreSQL databases from $POSTGRES_CONTAINER..."
+    docker exec -t "$POSTGRES_CONTAINER" pg_dumpall -U postgres > "$TEMP_DIR/databases/all_databases.sql"
 fi
 
 # 3. Archive critical application volumes & configurations
 echo "Archiving application volumes..."
 tar -czf "$TEMP_DIR/volumes/docmost_storage.tar.gz" -C /data/volumes docmost 2>/dev/null || true
-tar -czf "$TEMP_DIR/volumes/coolify_config.tar.gz" -C /data/coolify . 2>/dev/null || true
-tar -czf "$TEMP_DIR/volumes/uptime_kuma.tar.gz" -C /data/volumes uptime-kuma-data 2>/dev/null || true
+tar -czf "$TEMP_DIR/volumes/uptime_kuma.tar.gz" -C /data/volumes uptime-kuma 2>/dev/null || true
+tar -czf "$TEMP_DIR/volumes/wireguard.tar.gz" -C /data/volumes wireguard 2>/dev/null || true
+tar -czf "$TEMP_DIR/volumes/coolify_config.tar.gz" -C /data coolify 2>/dev/null || true
 
 # 4. Create single compressed archive
 ARCHIVE_NAME="janus_backup_$DATE.tar.gz"
