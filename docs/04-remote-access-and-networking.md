@@ -67,7 +67,7 @@ services:
 ```bash
 sudo docker compose up -d
 ```
-1. Open your browser to `http://<server-local-ip>:51821`.
+1. Open your browser to `http://192.168.1.68:51821`.
 2. Log in with your password.
 3. Click **"New Client"** (e.g., *Phone*, *Laptop*).
 4. Scan the QR code with the official **WireGuard app** on iOS/Android, or download the configuration file for your laptop.
@@ -114,5 +114,5 @@ You have two simple ways to turn the machine off cleanly:
 2. **Option B: Terminal Command over WireGuard**:  
    From a laptop or mobile SSH client (e.g., Termius):
    ```bash
-   ssh user@10.8.0.1 "sudo systemctl poweroff"
+   ssh daniel@10.8.0.1 "sudo systemctl poweroff"
    ```

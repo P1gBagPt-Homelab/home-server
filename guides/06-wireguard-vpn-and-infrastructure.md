@@ -1,5 +1,10 @@
 # Guide 06: WireGuard VPN & Remote Access Gateway
 
+> **Status**: ✅ **Fully Deployed & Operational on Project Janus**  
+> * **DDNS Domain**: `janus-lab.duckdns.org` (DuckDNS Cron sync active).
+> * **VPN Gateway**: `ghcr.io/wg-easy/wg-easy:14` (`51820/udp`, Dashboard on `http://192.168.1.68:51821`).
+> * **Router Forwarding**: UDP 51820, TCP 80, TCP 443 -> `192.168.1.68` (Vodafone Smart Router).
+
 This guide walks you through setting up **Dynamic DNS (DuckDNS)**, forwarding the WireGuard UDP port on your home router, and deploying **`wg-easy`** (WireGuard VPN with a web dashboard) so you can connect to Project Janus and Coolify securely from anywhere.
 
 ---

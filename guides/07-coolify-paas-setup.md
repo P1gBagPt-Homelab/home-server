@@ -1,5 +1,11 @@
 # Guide 07: Coolify PaaS Setup (Vercel-like Deployment on Janus)
 
+> **Status**: ✅ **Fully Deployed & Operational on Project Janus**  
+> * **Coolify Dashboard**: `http://192.168.1.68:8000` (and `http://10.8.0.1:8000` over WireGuard).
+> * **Shared Databases**: PostgreSQL 18 & Redis 7.2 running on the shared `coolify` network.
+> * **Docmost Wiki**: Deployed at `https://docs.janus-lab.duckdns.org` with Traefik Let's Encrypt SSL.
+> * **GitHub Integration**: Connected to GitHub App (`daniel-github`) for automated `git push` deployments.
+
 This guide walks you through installing **Coolify** on Ubuntu Server 24.04 LTS, setting up your GitHub integration, provisioning **Shared PostgreSQL** and **Redis**, deploying **Docmost**, and launching mini projects via `git push`.
 
 ---
