@@ -107,10 +107,19 @@ Paste the following automated backup script:
 set -e
 
 DATE=$(date +"%Y-%m-%d_%H-%M-%S")
+TODAY=$(date +"%Y-%m-%d")
 BACKUP_DIR="/data/backups/daily"
 TEMP_DIR="/data/backups/temp/$DATE"
 LOCAL_RETENTION_DAYS=14
 CLOUD_RETENTION_DAYS=60
+
+# Check if a backup already exists for today (pass --force to override)
+if [ "$1" != "--force" ]; then
+    if ls "$BACKUP_DIR"/janus_backup_${TODAY}_*.tar.gz 1> /dev/null 2>&1; then
+        echo "[$(date +"%Y-%m-%d %H:%M:%S")] Backup for today ($TODAY) already exists. Skipping."
+        exit 0
+    fi
+fi
 
 echo "[$DATE] Starting Project Janus backup..."
 
@@ -178,16 +187,25 @@ rclone ls janus-backup-encrypted:daily/
 
 ---
 
-## 5. Schedule Nightly Backups (Cron)
+## 5. Schedule Automated Backups (Smart Boot & Daily Cron)
+
+Because Project Janus is an on-demand server that may not always be running at 3:00 AM, the backup script checks whether a backup for today already exists:
+* **On Server Boot**: Runs 60 seconds after boot. If today's backup exists, it immediately exits in 0.01s. If this is the first boot of the day, it performs the backup.
+* **Hourly Check**: Catches multi-day sessions if the server stays on overnight.
 
 1. Open the root crontab:
    ```bash
    sudo crontab -e
    ```
-2. Schedule it to run every night at **03:00 AM**:
+2. Add these two lines at the bottom:
    ```cron
-   0 3 * * * /data/scripts/backup-janus.sh >> /var/log/janus-backup.log 2>&1
+   # Smart boot check (60 seconds after boot)
+   @reboot sleep 60 && /data/scripts/backup-janus.sh >> /var/log/janus-backup.log 2>&1
+
+   # Hourly check (runs only if today has no backup yet)
+   0 * * * * /data/scripts/backup-janus.sh >> /var/log/janus-backup.log 2>&1
    ```
+*(You can always force a manual backup anytime by running `sudo /data/scripts/backup-janus.sh --force`).*
 
 ---
 
