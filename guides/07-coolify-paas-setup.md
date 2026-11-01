@@ -79,6 +79,100 @@ Inside the Coolify dashboard, create a project (e.g., named **`Core Services`** 
 
 ---
 
+### 3. PostgreSQL Administration: Adding Databases & Users for Future Apps
+
+When adding new applications (e.g. **Vaultwarden**, custom APIs, Nextcloud, Immich) to your home server, you should **never** use the default `postgres` superuser or dump all tables into the default `postgres` database. Instead, follow the standard multi-tenant pattern: **one isolated database and dedicated user per application**.
+
+> [!CAUTION]
+> **Important: Identify the Correct PostgreSQL Container**:
+> * `coolify-db` (`postgres:15-alpine`): **DO NOT TOUCH.** This is Coolify's internal system database.
+> * Your application database (`postgres:18-alpine`): Running under a generated container name (e.g. `o4nipot4qcoaskqwss3zf6bq`).
+>
+> Run this command to find your active application database container:
+> ```bash
+> docker ps --filter "ancestor=postgres:18-alpine" --format "table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}"
+> ```
+
+#### Option A: Interactive PostgreSQL Shell
+
+1. Open `psql` directly inside the container as the `postgres` user:
+   ```bash
+   docker exec -it <POSTGRES_CONTAINER_ID_OR_NAME> psql -U postgres
+   ```
+   *(For example: `docker exec -it o4nipot4qcoaskqwss3zf6bq psql -U postgres`)*
+
+2. Run the SQL provisioning commands:
+   ```sql
+   -- 1. Create the dedicated user
+   CREATE USER <app_user> WITH ENCRYPTED PASSWORD 'YourSecurePasswordHere';
+
+   -- 2. Create the dedicated database owned by that user
+   CREATE DATABASE <app_db> OWNER <app_user>;
+
+   -- 3. Grant database privileges
+   GRANT ALL PRIVILEGES ON DATABASE <app_db> TO <app_user>;
+
+   -- 4. Switch to the newly created database
+   \c <app_db>
+
+   -- 5. Grant public schema privileges (Mandatory for PostgreSQL 15 & 18)
+   GRANT ALL ON SCHEMA public TO <app_user>;
+   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO <app_user>;
+   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO <app_user>;
+   ```
+
+3. Exit the PostgreSQL shell:
+   ```text
+   \q
+   ```
+
+---
+
+#### Option B: Automated One-Liner (Terminal Scripting)
+
+You can run the entire setup in a single non-interactive command from your host terminal (replace container name, username, password, and database name):
+
+```bash
+docker exec -i o4nipot4qcoaskqwss3zf6bq psql -U postgres << 'EOF'
+CREATE USER myapp WITH ENCRYPTED PASSWORD 'SuperSecretPassword123';
+CREATE DATABASE myapp OWNER myapp;
+GRANT ALL PRIVILEGES ON DATABASE myapp TO myapp;
+\c myapp
+GRANT ALL ON SCHEMA public TO myapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO myapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO myapp;
+EOF
+```
+
+---
+
+#### Connecting the New Application
+
+1. **Internal Connection String (`DATABASE_URL`)**:
+   Construct the database URL using the PostgreSQL container name or Coolify service name:
+   ```text
+   DATABASE_URL=postgresql://<app_user>:<app_password>@<POSTGRES_CONTAINER_NAME>:5432/<app_db>
+   ```
+   *Example for Vaultwarden:*
+   ```text
+   DATABASE_URL=postgresql://vaultwarden:SuperSecretPassword123@o4nipot4qcoaskqwss3zf6bq:5432/vaultwarden
+   ```
+
+2. **Docker Network Requirement**:
+   For the application container to resolve the database container's hostname, it must be attached to the shared `coolify` Docker network:
+   ```yaml
+   networks:
+     default:
+       name: coolify
+       external: true
+   ```
+
+> [!TIP]
+> **Password Special Characters Note**:
+> If your password contains characters such as `@`, `:`, `#`, `/`, or `%`, ensure they are **URL-encoded** when pasted into `DATABASE_URL` (e.g. `@` becomes `%40`, `#` becomes `%23`).
+
+---
+
 ## 5. Deploying Docmost (Centralized Documentation Wiki)
 
 Deploy Docmost directly inside the same `Core Services` project and connect it to your shared databases:

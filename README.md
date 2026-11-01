@@ -81,6 +81,7 @@ A documentation repository and operational guide for running a dual-purpose pers
    * Central GitHub Organization (`P1gBagPt-Homelab`) and 24/7 self-hosted runner.
    * Automated deployment on push/merge for all homelab projects via Coolify API.
    * 1-click provisioning of shared PostgreSQL 18 and Redis 7 databases.
+   * PostgreSQL administration: provisioning dedicated users, databases, and permissions for future apps.
    * Docmost collaborative wiki deployment linked to shared databases.
    * Integrated Traefik reverse proxy and automated Let's Encrypt wildcard SSL.
 
