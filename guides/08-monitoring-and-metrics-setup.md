@@ -18,6 +18,8 @@ Uptime Kuma continuously monitors your containers, databases, and websites, send
        image: louislam/uptime-kuma:2
        container_name: uptime-kuma
        restart: unless-stopped
+       environment:
+         - TZ=Europe/Lisbon
        volumes:
          - /data/volumes/uptime-kuma:/app/data
        ports:
@@ -30,14 +32,14 @@ Uptime Kuma continuously monitors your containers, databases, and websites, send
 ---
 
 ### Configuring Monitors in Uptime Kuma:
-Open `https://status.janus-lab.duckdns.org` and create your admin account, then add your core monitors:
+Open `https://status.janus-lab.duckdns.org` (or `http://192.168.1.68:3001`) and create your admin account, then add your core monitors:
 
 | Monitor Name | Monitor Type | Target / Hostname |
 | :--- | :--- | :--- |
-| **Docmost Wiki** | HTTP(s) | `http://docmost:3000` |
-| **Coolify Dashboard** | HTTP(s) | `http://192.168.1.150:8000` |
-| **PostgreSQL Database** | TCP Port | Hostname: `janus-postgres`, Port: `5432` |
-| **Redis Cache** | TCP Port | Hostname: `janus-redis`, Port: `6379` |
+| **Docmost Wiki** | HTTP(s) | `https://docs.janus-lab.duckdns.org` (or `http://docmost:3000`) |
+| **Coolify Dashboard** | HTTP(s) | `http://192.168.1.68:8000` |
+| **PostgreSQL Database** | TCP Port | Hostname: `<POSTGRES_INTERNAL_HOSTNAME>` (e.g. `o4nipot4qcoaskqwss3zf6bq`), Port: `5432` |
+| **Redis Cache** | TCP Port | Hostname: `<REDIS_INTERNAL_HOSTNAME>` (e.g. `owc6dm4qwd4lm7q37pvoibh0`), Port: `6379` |
 | **Home Router Internet** | Ping | `1.1.1.1` (or `8.8.8.8`) |
 
 ---
