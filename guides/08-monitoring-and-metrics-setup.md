@@ -1,5 +1,10 @@
 # Guide 08: Monitoring & Alerting (Uptime Kuma & Netdata)
 
+> **Status**: ✅ **Fully Deployed & Operational on Project Janus**  
+> * **Uptime Kuma**: Running on `louislam/uptime-kuma:2` with `TZ=Europe/Lisbon` (`status.janus-lab.duckdns.org` / `http://192.168.1.68:3001`).
+> * **Netdata**: Running with NVIDIA GPU reservation on `http://192.168.1.68:19999` (and private over WireGuard `http://10.8.0.1:19999`).
+> * **Monitored Services**: Docmost, Coolify, PostgreSQL 18, Redis 7.2, Netdata Agent, and Gateway Ping.
+
 This guide walks you through deploying **Uptime Kuma** (for service health checks and Discord/Telegram phone alerts) and **Netdata** (for real-time CPU, 40GB RAM, 4-disk storage health, and **RTX 2070 GPU metrics**) inside Coolify.
 
 ---
