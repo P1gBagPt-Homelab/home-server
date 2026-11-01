@@ -37,7 +37,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **06** | [WireGuard & DDNS](guides/06-wireguard-vpn-and-infrastructure.md) | ✅ Completed | `janus-lab.duckdns.org`, `wg-easy:14` on port 51821 |
 | **07** | [Coolify & Docmost](guides/07-coolify-paas-setup.md) | ✅ Completed | Postgres 18, Redis 7.2, `docs.janus-lab.duckdns.org` |
 | **08** | [Monitoring Stack](guides/08-monitoring-and-metrics-setup.md) | ✅ Completed | Uptime Kuma v2 (`status.janus-lab`), Netdata GPU metrics |
-| **09** | [System Hardening](guides/09-system-hardening-and-maintenance.md) | ⏳ Up Next | RTC clock sync (`timedatectl`), UFW, Fail2ban |
+| **09** | [System Hardening](guides/09-system-hardening-and-maintenance.md) | ✅ Completed | RTC clock sync (`timedatectl`), UFW, Fail2ban, unattended-upgrades |
 | **10** | [Automated Backups](guides/10-automated-backups-and-recovery.md) | ✅ Completed | Rclone Crypt AES-256 to 5TB Google Drive, automated snapshots |
 
 ---
