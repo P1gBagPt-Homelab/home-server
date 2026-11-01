@@ -1,5 +1,9 @@
 # Guide 05: WETEN PCIe Switch Installation & App Pairing
 
+> **Status**: ⏳ **Pending Hardware Delivery**  
+> * **Required Hardware**: WETEN JH-PcPro PCIe WiFi Remote Power Switch card.
+> * **Next Action**: Execute once the physical PCIe card arrives in the mail.
+
 This guide details physically installing the **WETEN JH-PcPro** card into your **ASUS PRIME Z370-A** motherboard, wiring the splitter cables, and pairing the device with the **Smart Life / Tuya** app and wireless desk button.
 
 ---

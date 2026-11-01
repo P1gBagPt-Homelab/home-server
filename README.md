@@ -33,7 +33,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **02** | [Windows & Disks](guides/02-windows-and-disk-preparation.md) | ✅ Completed | Fast Startup disabled, BIOS ErP Ready configured |
 | **03** | [OS Install & Partitions](guides/03-ubuntu-server-installation.md) | ✅ Completed | LVM ~456GB, `/boot/efi` isolated, `/data` on HDD |
 | **04** | [GPU & Docker](guides/04-post-install-gpu-and-docker.md) | ✅ Completed | Driver 595.99, CUDA 13.2, RTX 2070 container pass-through |
-| **05** | [WETEN PCIe Switch](guides/05-remote-switch-weten-setup.md) | ✅ Completed | ACPI graceful shutdown & remote turn-on paired |
+| **05** | [WETEN PCIe Switch](guides/05-remote-switch-weten-setup.md) | ⏳ Hardware Pending | Awaiting WETEN PCIe card delivery; wiring prepared |
 | **06** | [WireGuard & DDNS](guides/06-wireguard-vpn-and-infrastructure.md) | ✅ Completed | `janus-lab.duckdns.org`, `wg-easy:14` on port 51821 |
 | **07** | [Coolify & Docmost](guides/07-coolify-paas-setup.md) | ✅ Completed | Postgres 18, Redis 7.2, `docs.janus-lab.duckdns.org` |
 | **08** | [Monitoring Stack](guides/08-monitoring-and-metrics-setup.md) | ✅ Completed | Uptime Kuma v2 (`status.janus-lab`), Netdata GPU metrics |
