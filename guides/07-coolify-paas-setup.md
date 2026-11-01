@@ -4,6 +4,7 @@
 > * **Coolify Dashboard**: `http://192.168.1.68:8000` (and `http://10.8.0.1:8000` over WireGuard).
 > * **Shared Databases**: PostgreSQL 18 & Redis 7.2 running on the shared `coolify` network.
 > * **Docmost Wiki**: Deployed at `https://docs.janus-lab.duckdns.org` with Traefik Let's Encrypt SSL.
+> * **Vaultwarden Password Manager**: Deployed at `https://vault.janus-lab.duckdns.org` with PostgreSQL 18 backend.
 > * **GitHub Integration**: Connected to GitHub App (`daniel-github`) for automated `git push` deployments.
 
 This guide walks you through installing **Coolify** on Ubuntu Server 24.04 LTS, setting up your GitHub integration, provisioning **Shared PostgreSQL** and **Redis**, deploying **Docmost**, and launching mini projects via `git push`.
@@ -233,7 +234,73 @@ Once you create your Docmost admin workspace:
 
 ---
 
-## 6. Automated CI/CD Pipeline (GitHub Actions Organization Runner + Coolify)
+## 6. Deploying Vaultwarden (Bitwarden Password Manager)
+
+Deploy Vaultwarden (the Rust-based Bitwarden-compatible server) linked to the shared PostgreSQL 18 database, secured behind Traefik SSL:
+
+### 1. Provision Database & Directory:
+1. On the server terminal, ensure the `vaultwarden` user and database exist in PostgreSQL 18 (see Section 4.3).
+2. Create the persistent data volume on Server Disk 4:
+   ```bash
+   sudo mkdir -p /data/vaultwarden/data
+   sudo chown -R 1000:1000 /data/vaultwarden/data
+   ```
+
+### 2. Coolify Service Configuration:
+1. In `Core Services`, click **+ New Resource > Docker Compose**.
+2. Name it **`Vaultwarden`**.
+3. Paste the verified Compose configuration:
+
+```yaml
+services:
+  vaultwarden:
+    image: 'vaultwarden/server:latest'
+    restart: unless-stopped
+    environment:
+      - 'DATABASE_URL=postgresql://vaultwarden:PASTE_PASSWORD@o4nipot4qcoaskqwss3zf6bq:5432/vaultwarden'
+      - 'DOMAIN=https://vault.janus-lab.duckdns.org'
+      - WEBSOCKET_ENABLED=true
+      - SIGNUPS_ALLOWED=true
+      - INVITATIONS_ALLOWED=false
+      - SHOW_PASSWORD_HINT=false
+    volumes:
+      - '/data/vaultwarden/data:/data'
+
+networks:
+  default:
+    name: coolify
+    external: true
+```
+
+> [!IMPORTANT]
+> **Container Naming & Healthchecks in Coolify**:
+> * Do **not** hardcode `container_name: vaultwarden`. Allow Coolify to assign its dynamic service name so Traefik's internal DNS routing resolves port 80 cleanly.
+> * If you experience a `503 Service Unavailable` error, go to Vaultwarden's **Health Checks** tab in Coolify and set **Health check: Disabled** (to avoid Traefik dropping the container during health probe negotiation).
+
+### 3. Domain & SSL Setup:
+1. In Vaultwarden's **Domains** tab in Coolify:
+   * Domain: `https://vault.janus-lab.duckdns.org`
+   * Internal Port: `80`
+   * Protocol redirect: `HTTP -> HTTPS`
+2. Click **Save** and trigger a **Redeploy** from the top-right dropdown.
+
+### 4. Critical Post-Setup Hardening:
+1. Navigate to `https://vault.janus-lab.duckdns.org` and create your personal master account.
+2. Once logged in, return to Coolify and update the environment variable:
+   ```yaml
+   SIGNUPS_ALLOWED=false
+   ```
+3. Click **Redeploy** to permanently lock down public registration.
+
+### 5. Connecting Client Apps:
+In official Bitwarden apps (iOS, Android, Chrome/Firefox extensions, macOS/Windows):
+1. Click the **Gear icon ⚙️** on the login screen.
+2. In **Server URL**, enter: `https://vault.janus-lab.duckdns.org`.
+3. Log in with your master credentials. All vaults, passkeys, and 2FA tokens will sync across all devices with offline-caching support.
+
+---
+
+## 7. Automated CI/CD Pipeline (GitHub Actions Organization Runner + Coolify)
 
 ### The Homelab Challenge:
 In a homelab environment, Coolify is hosted inside your private local network (`http://192.168.1.68:8000`). GitHub's cloud servers cannot route webhook requests to private RFC-1918 LAN IP addresses.

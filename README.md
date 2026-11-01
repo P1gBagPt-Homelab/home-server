@@ -35,7 +35,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **04** | [GPU & Docker](guides/04-post-install-gpu-and-docker.md) | ✅ Completed | Driver 595.99, CUDA 13.2, RTX 2070 container pass-through |
 | **05** | [WETEN PCIe Switch](guides/05-remote-switch-weten-setup.md) | ⏳ Hardware Pending | Awaiting WETEN PCIe card delivery; wiring prepared |
 | **06** | [WireGuard & DDNS](guides/06-wireguard-vpn-and-infrastructure.md) | ✅ Completed | `janus-lab.duckdns.org`, `wg-easy:14` on port 51821 |
-| **07** | [Coolify & CI/CD](guides/07-coolify-paas-setup.md) | ✅ Completed | Postgres 18, Redis 7.2, Docmost, Org Self-Hosted Runner CI/CD |
+| **07** | [Coolify & CI/CD](guides/07-coolify-paas-setup.md) | ✅ Completed | Postgres 18, Redis 7.2, Docmost, Vaultwarden, Org Runner CI/CD |
 | **08** | [Monitoring Stack](guides/08-monitoring-and-metrics-setup.md) | ✅ Completed | Uptime Kuma v2 (`status.janus-lab`), Netdata GPU metrics |
 | **09** | [System Hardening](guides/09-system-hardening-and-maintenance.md) | ✅ Completed | RTC clock sync (`timedatectl`), UFW, Fail2ban, unattended-upgrades |
 | **10** | [Automated Backups](guides/10-automated-backups-and-recovery.md) | ✅ Completed | Rclone Crypt AES-256 to 5TB Google Drive, automated snapshots |
@@ -83,6 +83,7 @@ A documentation repository and operational guide for running a dual-purpose pers
    * 1-click provisioning of shared PostgreSQL 18 and Redis 7 databases.
    * PostgreSQL administration: provisioning dedicated users, databases, and permissions for future apps.
    * Docmost collaborative wiki deployment linked to shared databases.
+   * Vaultwarden Bitwarden password manager deployment at `https://vault.janus-lab.duckdns.org`.
    * Integrated Traefik reverse proxy and automated Let's Encrypt wildcard SSL.
 
 8. [**Guide 08: Monitoring & Alerting (Uptime Kuma & Netdata)**](guides/08-monitoring-and-metrics-setup.md)

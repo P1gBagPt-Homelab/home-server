@@ -3,7 +3,7 @@
 > **Status**: ✅ **Fully Deployed & Operational on Project Janus**  
 > * **Zero-Knowledge Encryption**: AES-256 via `janus-backup-encrypted` (`rclone crypt`).
 > * **Storage Target**: Dedicated 5 TB Google Drive (`JanusBackups` folder).
-> * **Automated Script**: `/data/scripts/backup-janus.sh` (Postgres dump + Docmost + Uptime Kuma + WireGuard + Coolify).
+> * **Automated Script**: `/data/scripts/backup-janus.sh` (Postgres dump + Docmost + Vaultwarden + Uptime Kuma + WireGuard + Coolify).
 > * **Retention Policy**: 14 days locally on Disk 4, 60 days in the cloud.
 
 Never lose your databases, Docmost wiki documentation, or mini-project code. This guide sets up an automated **3-2-1 backup pipeline**: fast daily local snapshots on Server Disk 4, paired with **zero-knowledge encrypted offsite backups** to your **5 TB Google Drive** using **Rclone**.
@@ -141,6 +141,7 @@ fi
 # 3. Archive critical application volumes & configurations
 echo "Archiving application volumes..."
 tar -czf "$TEMP_DIR/volumes/docmost_storage.tar.gz" -C /data/volumes docmost 2>/dev/null || true
+tar -czf "$TEMP_DIR/volumes/vaultwarden_data.tar.gz" -C /data vaultwarden 2>/dev/null || true
 tar -czf "$TEMP_DIR/volumes/uptime_kuma.tar.gz" -C /data/volumes uptime-kuma 2>/dev/null || true
 tar -czf "$TEMP_DIR/volumes/wireguard.tar.gz" -C /data/volumes wireguard 2>/dev/null || true
 tar -czf "$TEMP_DIR/volumes/coolify_config.tar.gz" -C /data coolify 2>/dev/null || true

@@ -27,8 +27,9 @@ Coolify provides Git-based automated deployments, 1-click database provisioning,
              ▼                             ▼
    ┌───────────────────┐         ┌───────────────────┐
    │ 1-Click Databases │         │ 1-Click Apps & AI │
-   │ • PostgreSQL 16   │         │ • Docmost Wiki    │
-   │ • Redis 7         │         │ • Ollama (GPU)    │
+   │ • PostgreSQL 18   │         │ • Docmost Wiki    │
+   │ • Redis 7.2       │         │ • Vaultwarden     │
+   │                   │         │ • Ollama (GPU)    │
    └───────────────────┘         └───────────────────┘
 ```
 
@@ -50,6 +51,7 @@ Coolify stores all application configurations, Docker persistent volumes, and da
 ```
 /data/ (Mounted to dedicated Server Disk 4)
 ├── coolify/                      # Coolify configuration and internal state
+├── vaultwarden/                  # Vaultwarden attachments, RSA keys, and vault cache
 ├── volumes/                      # Persistent database & application data
 │   ├── postgres/                 # Central PostgreSQL 18 data
 │   ├── redis/                    # Central Redis 7.2 cache
