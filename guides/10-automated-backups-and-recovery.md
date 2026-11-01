@@ -1,5 +1,11 @@
 # Guide 10: Automated Backups & Disaster Recovery (Google Drive 5TB)
 
+> **Status**: ✅ **Fully Deployed & Operational on Project Janus**  
+> * **Zero-Knowledge Encryption**: AES-256 via `janus-backup-encrypted` (`rclone crypt`).
+> * **Storage Target**: Dedicated 5 TB Google Drive (`JanusBackups` folder).
+> * **Automated Script**: `/data/scripts/backup-janus.sh` (Postgres dump + Docmost + Uptime Kuma + WireGuard + Coolify).
+> * **Retention Policy**: 14 days locally on Disk 4, 60 days in the cloud.
+
 Never lose your databases, Docmost wiki documentation, or mini-project code. This guide sets up an automated **3-2-1 backup pipeline**: fast daily local snapshots on Server Disk 4, paired with **zero-knowledge encrypted offsite backups** to your **5 TB Google Drive** using **Rclone**.
 
 ---
