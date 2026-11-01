@@ -6,37 +6,34 @@ This guide walks you through setting up **Dynamic DNS (DuckDNS)**, forwarding th
 
 ## Step 1: Set Up Free Dynamic DNS (DuckDNS)
 
-Since home residential IP addresses periodically change, Dynamic DNS gives your home server a permanent hostname (`janux-lab.duckdns.org`):
+Since home residential IP addresses periodically change, Dynamic DNS gives your home server a permanent hostname (`janus-lab.duckdns.org`):
 
 1. Go to [https://www.duckdns.org](https://www.duckdns.org) and log in (via GitHub, Google, or Reddit).
-2. Under **Domains**, register your domain `janux-lab` and click **add domain**.
+2. Under **Domains**, register your domain `janus-lab` and click **add domain**.
 3. Note your **DuckDNS Token** displayed at the top of the page.
 
 ---
 
 ## Step 2: Router Port Forwarding & Static IP (Vodafone Smart Router)
 
-To allow encrypted WireGuard VPN packets through your home router:
+To allow remote VPN access and web traffic through your home router:
 
 1. **Log in to Router Admin Panel**:
    * Open your browser and navigate to `http://192.168.1.1`.
 2. **Switch to Expert Mode**:
    * In the top-right corner dropdown, select **`Modo Expert`**.
 3. **Configure Port Mapping (Port Forwarding)**:
-   * In the top navigation bar, click **`Internet`**.
-   * In the left sidebar, select **`Port Mapping`**.
-   * In the upper **Port Mapping** section (above *Port Triggering*), click the purple **`(+)`** button.
-   * Configure the modal fields:
-     * **Nome**: `WireGuard`
-     * **Serviço**: `Selecionar...` (leave default / custom)
-     * **Protocolo**: **`UDP`** *(Crucial: must be UDP, not TCP)*
-     * **Equipamento**: Select **`janus`** *(auto-populates the **IP da LAN**)*
-     * **Endereço IP de origem externa**: Leave completely empty *(allows remote access from any mobile or laptop IP outside your home)*
-     * **Porta pública**: `51820`
-     * **Porta LAN**: `51820`
-   * Click **Confirmar** to save and activate the mapping rule.
+   * In the top navigation bar, click **`Internet`** → **`Port Mapping`**.
+   * In the upper **Port Mapping** section, click the purple **`(+)`** button to create the rules:
+     * **WireGuard Gateway** (VPN):
+       * **Nome**: `WireGuard` | **Protocolo**: `UDP` | **Equipamento**: `janus` (`192.168.1.68`) | **Portas**: `51820`
+     * **Traefik Web & SSL Challenges** (Coolify):
+       * **Nome**: `Traefik-HTTP` | **Protocolo**: `TCP` | **Equipamento**: `janus` (`192.168.1.68`) | **Portas**: `80`
+     * **Traefik Encrypted HTTPS** (Web Services & Wiki):
+       * **Nome**: `Traefik-HTTPS` | **Protocolo**: `TCP` | **Equipamento**: `janus` (`192.168.1.68`) | **Portas**: `443`
+   * Click the purple **Confirmar** button at the bottom to save all rules to the router.
 4. **Ensure Static IP Reservation**:
-   * In the top menu, go to **`Definições`** → **`Rede Local (LAN)`** (or click the `(i)` info icon on `janus` from the **`Visão geral`** dashboard) to verify that `janus` has a permanent DHCP reservation so its local IP never changes.
+   * In the top menu, go to **`Definições`** → **`Rede Local (LAN)`** (or click the `(i)` info icon on `janus` from the **`Visão geral`** dashboard) to verify that `janus` is bound to `192.168.1.68` permanently.
 
 ---
 
@@ -78,7 +75,7 @@ services:
     restart: unless-stopped
     environment:
       # Your DuckDNS Domain
-      - WG_HOST=janux-lab.duckdns.org
+      - WG_HOST=janus-lab.duckdns.org
       # Loaded cleanly from .env (no character escaping headaches)
       - PASSWORD_HASH=${PASSWORD_HASH}
       - WG_PORT=51820

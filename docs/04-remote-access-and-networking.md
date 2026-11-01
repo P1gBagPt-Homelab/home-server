@@ -14,7 +14,7 @@ Before setting up WireGuard, ensure your home network satisfies these conditions
    * If your ISP uses CGNAT (Carrier-Grade NAT), incoming ports cannot be opened without requesting a public IPv4 from your ISP or using an IPv6 address.
 2. **Dynamic DNS (DDNS)**:
    * Most residential internet connections change IP addresses periodically.
-   * Register a free DDNS hostname (e.g., [DuckDNS](https://www.duckdns.org) or [No-IP](https://www.noip.com)) so your WireGuard client always finds your home router (e.g., `janux-lab.duckdns.org`).
+   * Register a free DDNS hostname (e.g., [DuckDNS](https://www.duckdns.org) or [No-IP](https://www.noip.com)) so your WireGuard client always finds your home router (e.g., `janus-lab.duckdns.org`).
 3. **Router Port Forwarding (Vodafone Smart Router)**:
    * Switch router mode to **Modo Expert**.
    * Under **Internet** → **Port Mapping**, create a rule for device **`janus`**:
@@ -40,7 +40,7 @@ services:
     restart: unless-stopped
     environment:
       # Your Dynamic DNS domain or public IP
-      - WG_HOST=janux-lab.duckdns.org
+      - WG_HOST=janus-lab.duckdns.org
       # Web UI Password Hash (loaded from .env to prevent $ expansion issues)
       - PASSWORD_HASH=${PASSWORD_HASH}
       # WireGuard Port

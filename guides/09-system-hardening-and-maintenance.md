@@ -152,4 +152,31 @@ sudo smartctl -A /dev/sda
   * Detach session: Press `Ctrl + B`, then `D`
   * Reattach session: `tmux attach`
 
-Your server OS is now hardened, synchronized with Windows, and fully equipped with professional diagnostic tools!
+---
+
+## 8. Safe Shutdown, Reboot & Automated Service Recovery
+
+When operating a home server with persistent databases, always power off or reboot gracefully to prevent data corruption:
+
+### 1. Safe Power Off (Graceful Shutdown):
+```bash
+sudo shutdown -h now
+```
+*(Or `poweroff` if logged in as root).*
+
+### 2. Safe Reboot:
+```bash
+sudo reboot
+```
+
+### What Happens Behind the Scenes:
+1. **Database Buffer Flush**: Linux systemd issues a `SIGTERM` signal to Docker. **PostgreSQL** and **Redis** gracefully commit transaction logs (WAL) and write cached memory pages to the NVMe disk (`/data`).
+2. **Clean Unmount**: All filesystem mounts (`/` and `/data`) are safely unmounted without filesystem dirt.
+3. **Hardware ACPI Power-Off**: Motherboard, CPU, GPU, and fans power down completely.
+
+### Automated Boot Recovery:
+All infrastructure services across Project Janus (WireGuard Gateway, Coolify PaaS, Traefik Reverse Proxy, PostgreSQL 18, Redis 7.2, and Docmost) are configured with `restart: unless-stopped`:
+* As soon as you turn the computer back on (or wake it remotely via the Weten PCI-e card), **Ubuntu starts all containers automatically in the background**.
+* No manual terminal commands or container restarts are needed; all dashboards and web services are immediately restored!
+
+Your server OS is now hardened, synchronized with Windows, equipped with professional diagnostics, and protected with graceful shutdown procedures!
