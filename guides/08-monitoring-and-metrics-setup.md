@@ -15,7 +15,7 @@ Uptime Kuma continuously monitors your containers, databases, and websites, send
    ```yaml
    services:
      uptime-kuma:
-       image: louislam/uptime-kuma:1
+       image: louislam/uptime-kuma:2
        container_name: uptime-kuma
        restart: unless-stopped
        volumes:
