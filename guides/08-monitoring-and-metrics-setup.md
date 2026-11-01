@@ -71,6 +71,8 @@ Netdata provides per-second live graphs of CPU temperatures, RAM usage, disk I/O
        container_name: netdata
        restart: unless-stopped
        hostname: janus
+       ports:
+         - "19999:19999"
        cap_add:
          - SYS_PTRACE
          - SYS_ADMIN
@@ -99,10 +101,25 @@ Netdata provides per-second live graphs of CPU temperatures, RAM usage, disk I/O
      netdatalib:
      netdatacache:
    ```
-4. In the **Domains** field, enter:  
-   `https://netdata.janus-lab.duckdns.org`
-   *(Or keep it private on `http://10.8.0.1:19999` accessible only over WireGuard).*
-5. Click **Deploy**.
+
+> [!WARNING]
+> **Netdata Has No Built-In Password Screen!**  
+> If you attach a public domain (like `https://netdata.janus-lab.duckdns.org`) without authentication, Netdata shows:  
+> `⚠️ IMPORTANT: This Netdata is openly accessible from the Internet!`  
+> Anyone visiting the link could view every running process, open port, and disk metric on Janus without logging in.
+
+### How to Secure Netdata (Choose One):
+
+* **Option A: Keep It 100% Private (Recommended)**:
+  * Leave the **Domains** field in Coolify **empty**.
+  * Keep `ports: - "19999:19999"`.
+  * Access locally at `http://192.168.1.68:19999`, or from anywhere over **WireGuard VPN** at `http://10.8.0.1:19999`.
+  * Port 19999 is not exposed to the internet, so the warning disappears and your hardware metrics remain completely confidential.
+
+* **Option B: Free Netdata Cloud SSO**:
+  * Create a free account at [app.netdata.cloud](https://app.netdata.cloud).
+  * Add your `NETDATA_CLAIM_TOKEN` and `NETDATA_CLAIM_ROOMS` to Netdata's environment variables.
+  * Access your dashboards securely from anywhere with Google/GitHub SSO and 2FA, without exposing public ports.
 
 ---
 
