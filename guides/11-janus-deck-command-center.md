@@ -1,10 +1,11 @@
 # Guide 11: JanusDeck Command Center & Remote Management Portal
 
-> **Status**: 📋 **Planned / Architecture Finalized**  
-> * **Project Repo**: [`janus-deck`](file:///Users/daniel/Desktop/Projects/janus-deck)
+> **Status**: ✅ **Fully Implemented & Deployed on Project Janus**  
+> * **Project Repo**: [`P1gBagPt-Homelab/JanusDeck`](https://github.com/P1gBagPt-Homelab/JanusDeck)
 > * **Target URL**: `https://control.janus-lab.duckdns.org` (and `http://192.168.1.68:8080`)
 > * **Platform**: Coolify PaaS (Docker Compose)
-> * **Core Features**: Service Bookmarks, Real-time Hardware Telemetry (RTX 2070, CPU, 40GB RAM), PIN-Guarded Power Controls, and One-Click Reboot to Windows Gaming Mode.
+> * **Stack**: FastAPI (Python 3.12) + Svelte 5 (Runes, TypeScript, Tailwind CSS)
+> * **Core Features**: Real-time Hardware Telemetry (RTX 2070, i7-8700K, 40GB RAM), Mandatory Master PIN Security Gate with Paste & Autofill Support, 5-Second Countdown Abort Gate, One-Shot Boot to Windows Gaming Mode, and Automated CI/CD via GitHub Actions Organization Runner.
 
 ---
 
@@ -13,7 +14,7 @@
 **JanusDeck** is the open-source management portal built specifically for Project Janus's dual-boot architecture. It serves three primary functions:
 
 1. **Central Service Launcher**: A clean, single-screen dashboard with live availability badges for all services hosted on Janus (Coolify, Docmost, Uptime Kuma, Netdata, WireGuard).
-2. **Live Hardware Telemetry**: Streams real-time Intel i7-8700K load and thermals, 40GB DDR4 memory usage, NVMe/HDD disk capacity, and ASUS ROG Strix RTX 2070 GPU stats (VRAM, temperature, fan speed).
+2. **Live Hardware Telemetry**: Streams real-time Intel i7-8700K load and thermals, 40GB DDR4 memory usage, NVMe/HDD disk capacity, and ASUS ROG Strix RTX 2070 GPU stats (VRAM, temperature, fan speed) via Server-Sent Events (SSE).
 3. **Remote Dual-Boot & Power Controls**: Securely commands the physical machine to:
    * **Reboot Ubuntu Server** (`systemctl reboot`).
    * **Graceful ACPI Shutdown** (`systemctl poweroff`).
@@ -21,7 +22,36 @@
 
 ---
 
-## 2. Docker to Host Power Bridge Architecture
+## 2. Security & Authentication Architecture
+
+1. **Mandatory Master PIN Gate**:
+   * Viewing the command deck, telemetry, and power actions strictly requires authentication.
+   * Unauthorized visitors see only a clean, branded security gate; telemetry streaming is stopped until unlocked.
+2. **Flexible Input & Paste Integration**:
+   * Supports standard clipboard pasting (`⌘V` on macOS, `Ctrl+V` on Windows/Linux).
+   * 1-click **Paste PIN** button using `navigator.clipboard.readText()`.
+   * Accessible input with `autocomplete="one-time-code"` for 1-tap password manager autofill (1Password, Bitwarden, Apple Keychain).
+3. **Brute-Force Rate Limiting**:
+   * Hardware-isolated rate limiting with exponential lockout upon repeated failed attempts.
+4. **5-Second Countdown Safety Gate**:
+   * Destructive power actions require a 5-second confirmation countdown with an immediate visual abort button.
+
+---
+
+## 3. Automated CI/CD Deployment Pipeline
+
+JanusDeck is automatically deployed to Coolify using GitHub Actions and a self-hosted runner:
+
+1. **Organization-Level Runner**:
+   * Hosted directly on Ubuntu Server (`janus`) as a 24/7 background service:
+     `actions.runner.P1gBagPt-Homelab.janus.service`
+2. **Automated Trigger on Push**:
+   * Whenever code is pushed or a Pull Request is merged into `main`, GitHub Actions triggers `.github/workflows/deploy.yml`.
+   * The local runner executes an authenticated API request to Coolify (`http://192.168.1.68:8000/api/v1/deploy`), initiating a zero-downtime rebuild and redeploy in ~5 seconds.
+
+---
+
+## 4. Docker to Host Power Bridge Architecture
 
 Because the dashboard runs as a container managed by Coolify, it interfaces with the host system via mounted control sockets:
 
@@ -47,7 +77,7 @@ sequenceDiagram
 
 ---
 
-## 3. Coolify Deployment Specification
+## 5. Coolify Deployment Specification
 
 When ready to deploy on Janus via Coolify:
 
@@ -83,7 +113,7 @@ When ready to deploy on Janus via Coolify:
 
 ---
 
-## 4. Execution Roadmap Reference
+## 6. Execution Roadmap Reference
 
 The complete development roadmap and phase breakdown are documented in the standalone repository:
 👉 [**JanusDeck Implementation Plan**](file:///Users/daniel/Desktop/Projects/janus-deck/docs/IMPLEMENTATION_PLAN.md)

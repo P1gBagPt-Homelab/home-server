@@ -139,23 +139,94 @@ Once you create your Docmost admin workspace:
 
 ---
 
-## 6. How to Deploy Your Own Mini Projects (The Vercel Experience)
+## 6. Automated CI/CD Pipeline (GitHub Actions Organization Runner + Coolify)
 
-Whenever you build a new mini project on your laptop (e.g., Next.js, React, Node.js, Python FastAPI):
+### The Homelab Challenge:
+In a homelab environment, Coolify is hosted inside your private local network (`http://192.168.1.68:8000`). GitHub's cloud servers cannot route webhook requests to private RFC-1918 LAN IP addresses.
 
-1. Push your code to your GitHub repository:
-   ```bash
-   git add .
-   git commit -m "initial commit"
-   git push origin main
-   ```
-2. In Coolify, click **+ New Resource > Application > GitHub App**.
-3. Select your repository and the branch (e.g. `main`).
-4. Enter the domain you want:
-   `https://myproject.janus-lab.duckdns.org`
-5. **Connect to PostgreSQL/Redis**:
-   * Under **Environment Variables**, you can reference your database using the internal connection strings found in Step 4:
-     `DATABASE_URL=postgresql://postgres:<password>@<postgres-container-id>:5432/myproject_db`
-6. Click **Deploy**.
+### The Solution: 24/7 Self-Hosted Runner on Project Janus
+To enable automated deployments on every `git push` or PR merge without exposing Coolify's management port to the public internet:
 
-From this moment on, **every time you run `git push origin main` on your laptop, Coolify automatically pulls the code, rebuilds the project, and deploys it with zero downtime!**
+1. **Central GitHub Organization**:
+   * All homelab repositories reside under the **`P1gBagPt-Homelab`** GitHub organization.
+2. **Dedicated Organization Runner**:
+   * A single, official GitHub Actions runner (`actions-runner-linux-x64`) is installed directly on Ubuntu Server (`janus`).
+   * Runs 24/7 as a background systemd service: `actions.runner.P1gBagPt-Homelab.janus.service`.
+   * **Organization-wide**: Any repository in `P1gBagPt-Homelab` with `runs-on: self-hosted` is automatically served by this runner.
+3. **Internal API Trigger**:
+   * When code is pushed or a PR is merged into `main`, GitHub signals your local runner.
+   * The runner fires an internal authenticated POST request to Coolify's deployment API (`http://192.168.1.68:8000/api/v1/deploy?uuid=...`), triggering an instant rebuild and container redeploy in seconds.
+
+---
+
+### Step-by-Step: Adding a New Project with Automated Deployment
+
+Whenever you create a new application (e.g. Next.js, FastAPI, Node.js, Go) for your homelab:
+
+#### 1. Create the Repo in the Organization
+Create the repository under **`P1gBagPt-Homelab`** (e.g. `https://github.com/P1gBagPt-Homelab/my-new-project`).
+
+#### 2. Create the Application in Coolify
+1. In Coolify (`http://192.168.1.68:8000`), navigate to your project and click **+ New Resource > Application > GitHub App**.
+2. Select your repository (`P1gBagPt-Homelab/my-new-project`) and branch `main`.
+3. Note the application's unique **UUID** from the URL bar (e.g. `rvi8hu1owmes3shdpsiuyz3q`).
+
+#### 3. Add GitHub Secrets to the Repository
+In the repository's **Settings > Secrets and variables > Actions**, add:
+* `COOLIFY_HOST`: `http://192.168.1.68:8000`
+* `COOLIFY_UUID`: `<your-app-uuid-from-coolify>`
+* `COOLIFY_TOKEN`: `<your-coolify-api-token>`
+
+*(Tip: You can set these in 5 seconds from your terminal using `gh secret set COOLIFY_TOKEN`)*.
+
+#### 4. Add the Universal Deployment Workflow
+Create `.github/workflows/deploy.yml` in your project:
+
+```yaml
+name: Deploy to Coolify
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Trigger Coolify Redeploy
+    runs-on: self-hosted
+    steps:
+      - name: Trigger Coolify Deployment
+        env:
+          COOLIFY_HOST: ${{ secrets.COOLIFY_HOST }}
+          COOLIFY_UUID: ${{ secrets.COOLIFY_UUID }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        run: |
+          echo "🚀 Triggering Coolify redeploy on ${COOLIFY_HOST}..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "${COOLIFY_HOST}/api/v1/deploy?uuid=${COOLIFY_UUID}&force=false")
+          
+          HTTP_STATUS=$(echo "${RESPONSE}" | tail -n1)
+          BODY=$(echo "${RESPONSE}" | sed '$d')
+          
+          if [ "${HTTP_STATUS}" -eq 200 ]; then
+            echo "✅ Deployment successfully queued on Coolify!"
+          else
+            echo "❌ Coolify deployment failed with HTTP ${HTTP_STATUS}"
+            exit 1
+          fi
+```
+
+#### 5. Verify the Runner Service
+On the Ubuntu server, the runner service can be monitored at any time:
+```bash
+# Check runner daemon status
+sudo systemctl status actions.runner.P1gBagPt-Homelab.janus.service
+
+# Or using the runner helper:
+cd ~/actions-runner && sudo ./svc.sh status
+```
+
+From this point on, **every `git push origin main` or merged Pull Request automatically queues a fresh build in Coolify in under 5 seconds!**
