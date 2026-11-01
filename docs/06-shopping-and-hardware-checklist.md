@@ -20,7 +20,7 @@ This guide outlines the exact hardware needed to complete the hybrid gaming and 
 
 ## 2. Where to Buy & Alternative Links
 
-* **Primary Purchase**: [Vinted Post: WETEN JH-PcPro](https://www.vinted.pt/items/10034093084-tuya-pcie-smart-power-switch-pc-draadloze-rf-433mhz-knop)
+* **Purchased Item**: [Vinted: Tuya wifi interruptor computador + Botão Wireless](https://www.vinted.pt/items/5965973958-tuya-wifi-interruptor-computador-botao-wireless)
 * **Amazon.es Alternative**: [Direct Search for Tuya PCIe PC Switch](https://www.amazon.es/s?k=tarjeta+pcie+encendido+pc+tuya) (~€15 – €28).
 * **AliExpress Alternative**: [Direct Search for Tuya PCIe PC Switch](https://es.aliexpress.com/w/wholesale-tuya-pcie-power-switch.html) (~€8 – €14).
 
@@ -30,7 +30,7 @@ This guide outlines the exact hardware needed to complete the hybrid gaming and 
 
 | Hardware Item | Status | Purpose / Action |
 | :--- | :---: | :--- |
-| **WETEN JH-PcPro PCIe Switch** | 🛒 **In Purchase (Vinted)** | Remote power ON/OFF via Tuya + 433MHz desk button. |
+| **WETEN / Tuya PCIe Switch + RF Button** | 📦 **Purchased (In Transit from Vinted)** | Remote power ON/OFF via Tuya + 433MHz desk button. |
 | **TP-Link Archer T4E** | Keep | Kept in `PCIEX1_3` for Windows WiFi if needed. |
 | **Cat 6 Ethernet Cable** | Highly Recommended | Plug ASUS Intel I219-V LAN port directly into router for server & WireGuard stability. |
 | **2x SATA Data Cables** | Ready at home | Connect the 2 dedicated server disks to ASUS Z370-A SATA ports. |
