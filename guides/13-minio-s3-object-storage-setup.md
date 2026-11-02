@@ -1,6 +1,6 @@
 # Guide 13: Self-Hosted S3 Object Storage with MinIO & Project Isolation
 
-> **Status**: ⏳ **Ready to Deploy on Project Janus**  
+> **Status**: ✅ **Implemented & Verified on Project Janus**  
 > * **Platform**: Coolify PaaS (Docker Compose) or Standalone Docker CE
 > * **Service Name**: `minio-s3` (in `Infrastructure` or `Core Services` project)
 > * **S3 API Endpoint**: `https://s3.janus-lab.duckdns.org` (Port 9000)
@@ -84,7 +84,7 @@ Paste the following production configuration:
 ```yaml
 services:
   minio:
-    image: quay.io/minio/minio:latest
+    image: ghcr.io/coollabsio/minio:latest
     container_name: minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
@@ -186,10 +186,8 @@ If you prefer provisioning buckets and credentials in 5 seconds from the Ubuntu 
 
 ```bash
 # 1. Install MinIO client on Ubuntu (one-time setup)
-curl https://dl.min.io/client/mc/release/linux-amd64/mc \
-  --create-dirs \
-  -o $HOME/bin/mc && chmod +x $HOME/bin/mc
-export PATH=$PATH:$HOME/bin
+sudo curl -fsSL https://github.com/minio/mc/releases/download/RELEASE.2025-08-13T08-35-41Z/mc.linux-amd64.RELEASE.2025-08-13T08-35-41Z -o /usr/local/bin/mc
+sudo chmod +x /usr/local/bin/mc
 
 # 2. Configure alias for local MinIO admin
 mc alias set janus http://localhost:9000 janus-admin "YourAdminPasswordHere"
@@ -240,7 +238,31 @@ echo "S3_SECRET_KEY=${USER_SECRET}"
 
 ## 6. How Projects Consume Your MinIO Service
 
-### Standard `.env` Pattern for Projects
+### Docmost Integration Example (Verified on Janus)
+
+For Docmost (deployed in Guide 07), files and wiki attachments are uploaded to MinIO and served directly to browsers:
+
+1. **Enable public download access on the bucket** (so client browsers can render images):
+   ```bash
+   mc anonymous set download janus/docmost-data
+   ```
+
+2. **Add to Docmost Docker Compose environment**:
+   ```yaml
+   environment:
+     - NODE_TLS_REJECT_UNAUTHORIZED=0  # Required if Traefik uses self-signed / staging certificates
+     - STORAGE_DRIVER=s3
+     - AWS_S3_ACCESS_KEY_ID=docmost-user
+     - AWS_S3_SECRET_ACCESS_KEY=JobDY9qfV6BSW3F6mZqYeDz8rsU5MrYF
+     - AWS_S3_REGION=us-east-1
+     - AWS_S3_BUCKET=docmost-data
+     - AWS_S3_ENDPOINT=https://s3.janus-lab.duckdns.org
+     - AWS_S3_FORCE_PATH_STYLE=true
+   ```
+
+---
+
+### Standard `.env` Pattern for Custom Projects
 
 Any application that supports S3 (Next.js, FastAPI, Spring Boot, Supabase, Strapi, Docmost) takes standard S3 environment variables:
 

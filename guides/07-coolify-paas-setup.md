@@ -241,6 +241,10 @@ services:
     volumes:
       - /data/volumes/docmost:/app/data/storage
 
+> [!TIP]
+> **S3 Object Storage Offloading**:
+> To offload all Docmost media attachments and file uploads onto your 1TB HDD MinIO S3 cluster with per-project IAM isolation, follow [Guide 13](13-minio-s3-object-storage-setup.md#docmost-integration-example-verified-on-janus).
+
 networks:
   default:
     name: coolify
