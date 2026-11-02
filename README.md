@@ -43,6 +43,8 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **12** | [Local AI on Coolify](guides/12-local-ai-stack-coolify-setup.md) | ⏳ Ready to Deploy | Ollama + Open WebUI, RTX 2070 GPU pass-through, `ai.janus-lab` |
 | **13** | [MinIO S3 Storage](guides/13-minio-s3-object-storage-setup.md) | ⏳ Ready to Deploy | Multi-tenant S3 API, per-project IAM isolation, HDD cold storage |
 | **14** | [New Project Playbook](guides/14-new-project-playbook.md) | ✅ Completed | End-to-end blueprint: shared Postgres, S3, GPU AI, CI/CD, Traefik SSL & monitoring |
+| **15** | [RabbitMQ Message Broker](guides/15-rabbitmq-message-broker-setup.md) | ⏳ Ready to Deploy | Centralized AMQP broker, vhost isolation, Management UI & Prometheus |
+| **16** | [Observability Stack](guides/16-observability-grafana-prometheus-cadvisor.md) | ⏳ Ready to Deploy | Grafana, Prometheus, cAdvisor & Loki for per-container CPU/RAM & logs |
 
 ---
 
@@ -132,6 +134,18 @@ A documentation repository and operational guide for running a dual-purpose pers
     * Multi-tenant provisioning for shared PostgreSQL 18, Redis 7.2, and MinIO S3.
     * Direct container-to-container GPU acceleration with Ollama (`llama3.1:8b`, RTX 2070).
     * Automated CI/CD on push via GitHub Actions runner, Traefik wildcard SSL, and Uptime Kuma alerts.
+
+15. [**Guide 15: Centralized Message Broker with RabbitMQ**](guides/15-rabbitmq-message-broker-setup.md)
+    * Central AMQP message broker deployment on Coolify (`https://queue.janus-lab.duckdns.org`).
+    * Virtual Host (`vhost`) and user isolation for multi-tenant microservices.
+    * Producer/Consumer examples for Python (`pika`) and Node.js (`amqplib`).
+    * Native Prometheus metrics exporter integration on port 15692.
+
+16. [**Guide 16: Centralized Observability Stack (Grafana, Prometheus, cAdvisor & Loki)**](guides/16-observability-grafana-prometheus-cadvisor.md)
+    * Unified observability dashboard at `https://grafana.janus-lab.duckdns.org`.
+    * Prometheus time-series scraping for cAdvisor, RabbitMQ, and mini-project `/metrics`.
+    * Google cAdvisor per-container CPU & RAM profiling.
+    * Grafana Loki & Promtail for timestamp-aligned container log queries and error correlation.
 
 ---
 
