@@ -1,0 +1,354 @@
+# Guide 14: New Mini-Project Playbook & Centralized Blueprint
+
+> **Status**: ✅ **Standard Operational Playbook for Project Janus**  
+> * **Purpose**: End-to-end developer guide and checklist for bootstrapping, developing, deploying, and integrating new mini-projects into the Janus homelab ecosystem.  
+> * **Platform**: Coolify PaaS (`http://192.168.1.68:8000` / `http://10.8.0.1:8000`)  
+> * **Reverse Proxy & SSL**: Traefik with automated Let's Encrypt Wildcard SSL (`*.janus-lab.duckdns.org`)  
+> * **Shared Resources**: Multi-Tenant PostgreSQL 18, Redis 7.2, MinIO S3 Object Storage, and Local Ollama AI (RTX 2070 8GB VRAM).  
+> * **Automated CI/CD**: 24/7 Self-Hosted GitHub Actions Runner under `P1gBagPt-Homelab`.
+
+---
+
+## 1. Architectural Philosophy: Centralized & Concise
+
+When you build a new mini-project on **Project Janus**, **you never start from scratch**. You do not need to configure an Nginx reverse proxy, pay for S3 buckets, run separate database servers, or deal with manual SSH deployments. 
+
+Janus already provides a unified production-grade platform:
+
+```
+                              ┌────────────────────────────────────────┐
+                              │       P1gBagPt-Homelab (GitHub)        │
+                              └───────────────────┬────────────────────┘
+                                                  │ git push origin main
+                                                  ▼
+                              ┌────────────────────────────────────────┐
+                              │   Janus Self-Hosted Actions Runner     │
+                              │ (actions.runner.P1gBagPt-Homelab.janus)│
+                              └───────────────────┬────────────────────┘
+                                                  │ Internal API trigger
+                                                  ▼
+                              ┌────────────────────────────────────────┐
+                              │          Coolify PaaS (Janus)          │
+                              │      Builds & orchestrates container   │
+                              └───────────────────┬────────────────────┘
+                                                  │
+             ┌────────────────────────────────────┼────────────────────────────────────┐
+             ▼                                    ▼                                    ▼
+┌─────────────────────────┐          ┌─────────────────────────┐          ┌─────────────────────────┐
+│     Public Routing      │          │  Shared Infrastructure  │          │   Persistent Storage    │
+│ • Traefik Reverse Proxy │          │ • PostgreSQL 18 DB      │          │ • /data/volumes/ (SSD)  │
+│ • *.janus-lab.duckdns   │          │ • Redis 7.2 Cache       │          │ • /data/storage/ (HDD)  │
+│ • Let's Encrypt SSL 443 │          │ • MinIO S3 (Port 9000)  │          │ • Nightly Rclone Backup │
+│ • Uptime Kuma Alerts    │          │ • Ollama AI (RTX 2070)  │          │   to 5TB Google Drive   │
+└─────────────────────────┘          └─────────────────────────┘          └─────────────────────────┘
+```
+
+---
+
+## 2. The 10-Step Mini-Project Checklist
+
+Follow this linear checklist whenever you kick off a new application:
+
+```
+[ ] 1. Create Git Repo under P1gBagPt-Homelab organization
+[ ] 2. Provision dedicated DB & User on Shared PostgreSQL 18
+[ ] 3. (Optional) Allocate Redis database number (0-15)
+[ ] 4. (Optional) Provision MinIO S3 bucket & restricted IAM keys
+[ ] 5. (Optional) Hook into Local AI via Ollama API
+[ ] 6. Allocate correct storage path (/data/volumes vs /data/storage)
+[ ] 7. Define Dockerfile or docker-compose.yml on 'coolify' network
+[ ] 8. Register Application in Coolify & assign domain
+[ ] 9. Add GitHub Secrets & deploy.yml for automated push deployments
+[ ] 10. Register health monitor in Uptime Kuma & JanusDeck Portal
+```
+
+---
+
+## 3. Step-by-Step Implementation Guide
+
+### Step 1: Git Repository & GitHub Organization
+
+Always create your repository inside your centralized GitHub organization:
+* **GitHub Organization**: `https://github.com/P1gBagPt-Homelab`
+* **Naming Convention**: `kebab-case` (e.g. `smart-receipts`, `crypto-tracker`, `rss-summarizer`).
+* **Why**: The server runs an **organization-level GitHub Actions runner**. Any repository in this organization automatically inherits free, instant, 24/7 CI/CD builds on your local server.
+
+---
+
+### Step 2: Shared PostgreSQL 18 (Multi-Tenant Pattern)
+
+> [!IMPORTANT]
+> **Never spin up a separate PostgreSQL container for a mini-project.** Project Janus has a shared, high-performance PostgreSQL 18 instance with automated daily snapshots. Always create an isolated user and database inside it.
+
+1. **Find your active application PostgreSQL container ID**:
+   ```bash
+   docker ps --filter "ancestor=postgres:18-alpine" --format "{{.Names}}"
+   # Example output: o4nipot4qcoaskqwss3zf6bq
+   ```
+
+2. **Generate a secure password**:
+   ```bash
+   openssl rand -base64 24
+   ```
+
+3. **Provision the database & user in one non-interactive command**:
+   *(Replace `<app_name>`, `<app_user>`, `<app_password>`, and the container ID)*:
+   ```bash
+   docker exec -i o4nipot4qcoaskqwss3zf6bq psql -U postgres << 'EOF'
+   CREATE USER app_user WITH ENCRYPTED PASSWORD 'GeneratedPasswordHere';
+   CREATE DATABASE app_db OWNER app_user;
+   GRANT ALL PRIVILEGES ON DATABASE app_db TO app_user;
+   \c app_db
+   GRANT ALL ON SCHEMA public TO app_user;
+   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO app_user;
+   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO app_user;
+   EOF
+   ```
+
+4. **Your Internal Connection String**:
+   * **Node / Go / Java / Generic**:
+     ```text
+     DATABASE_URL=postgresql://app_user:GeneratedPasswordHere@o4nipot4qcoaskqwss3zf6bq:5432/app_db
+     ```
+   * **Python Async (FastAPI / SQLAlchemy + asyncpg)**:
+     ```text
+     DATABASE_URL=postgresql+asyncpg://app_user:GeneratedPasswordHere@o4nipot4qcoaskqwss3zf6bq:5432/app_db
+     ```
+   *(Note: Remember to URL-encode any special characters like `@` or `#` if used in passwords)*.
+
+---
+
+### Step 3: Shared Redis 7.2 (Caching & Task Queues)
+
+If your app needs Celery, BullMQ, Redis caching, or session storage:
+* **Container Hostname**: Found under Coolify $\rightarrow$ `Infrastructure` $\rightarrow$ `Redis` (or check `docker ps --filter "ancestor=redis:7.2-alpine"`).
+* **Connection String**:
+  ```text
+  REDIS_URL=redis://:YOUR_SHARED_REDIS_PASSWORD@<redis-container-id>:6379/1
+  ```
+* **Best Practice**: Use a dedicated Redis database index (`/0` for Docmost, `/1` for project A, `/2` for project B) to prevent key collision.
+
+---
+
+### Step 4: MinIO S3 Object Storage (Media & Files)
+
+If your project handles file uploads, PDF processing, or image hosting:
+
+1. **Access MinIO Console**: `https://minio.janus-lab.duckdns.org` (or over WireGuard).
+2. **Create Bucket**: Name it after your project (e.g. `smart-receipts`).
+3. **Create Dedicated Service Account (Access Key + Secret Key)**:
+   * Navigate to **Identity > Service Accounts > Create Service Account**.
+   * Restrict IAM policy strictly to your bucket:
+     ```json
+     {
+       "Version": "2012-10-17",
+       "Statement": [
+         {
+           "Effect": "Allow",
+           "Action": ["s3:*"],
+           "Resource": ["arn:aws:s3:::smart-receipts", "arn:aws:s3:::smart-receipts/*"]
+         }
+       ]
+     }
+     ```
+4. **Connection Endpoints**:
+   * **Internal (Container-to-Container via Docker)**: `http://minio:9000` *(Zero network latency, no internet routing)*.
+   * **External (Client Browser / Frontend uploads)**: `https://s3.janus-lab.duckdns.org`.
+   * **Region**: `us-east-1` (MinIO default).
+
+---
+
+### Step 5: Local AI Integration (ASUS ROG Strix RTX 2070)
+
+If your project needs text generation, embeddings, data extraction, or code analysis:
+* **Ollama Endpoint**: `http://ollama:11434` *(on internal `coolify` Docker network)*.
+* **Open WebUI**: `https://ai.janus-lab.duckdns.org` (for manual prompting and model downloads).
+* **Available Models**: `llama3.1:8b`, `mistral:7b`, `nomic-embed-text`.
+* **Zero Cost**: No OpenAI API credits needed; runs locally with 8GB VRAM CUDA acceleration on your RTX 2070.
+
+**Sample Python Client Call**:
+```python
+import requests
+
+response = requests.post(
+    "http://ollama:11434/api/generate",
+    json={"model": "llama3.1:8b", "prompt": "Extract key items from this invoice...", "stream": False}
+)
+print(response.json()["response"])
+```
+
+---
+
+### Step 6: Storage Paths & Disk Tiering Conventions
+
+Project Janus uses isolated physical disks. Follow this directory rule:
+
+| Storage Type | Physical Location | Path Pattern | Ideal Use Case |
+| :--- | :--- | :--- | :--- |
+| **High-Speed SSD Pool** (~456 GB LVM) | Disks 2 & 3 | `/data/volumes/<app_name>/` | Application config, databases, SQLite files, high-frequency caches. |
+| **Cold Storage HDD** (1 TB) | Disk 4 | `/data/storage/<app_name>/` | Large uploads, datasets, MinIO buckets, media files, video streams. |
+| **Temporary / Builds** | SSD Pool | `/data/projects/<app_name>/` | Coolify build cache and Git checkouts. |
+
+**Permissions Setup**:
+```bash
+sudo mkdir -p /data/volumes/<app_name>
+sudo chown -R 1000:1000 /data/volumes/<app_name>
+```
+
+---
+
+### Step 7: Containerization & Docker Compose Template
+
+For any mini-project, create a `docker-compose.yml` or standard `Dockerfile`. 
+
+> [!CRITICAL]
+> **Docker Network Requirement**:
+> Your service container must join the external `coolify` network to talk to PostgreSQL, Redis, MinIO, and Traefik!
+
+#### Recommended `docker-compose.yml` Template:
+```yaml
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      # Central Database & Cache
+      - DATABASE_URL=postgresql://app_user:PASSWORD@o4nipot4qcoaskqwss3zf6bq:5432/app_db
+      - REDIS_URL=redis://:PASSWORD@<redis-container-id>:6379/1
+      # Central S3 Storage
+      - S3_ENDPOINT=http://minio:9000
+      - S3_PUBLIC_URL=https://s3.janus-lab.duckdns.org
+      - S3_BUCKET=my-app-bucket
+      - S3_ACCESS_KEY=my-access-key
+      - S3_SECRET_KEY=my-secret-key
+      # Local AI
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - /data/volumes/my-app:/app/data
+    networks:
+      - coolify
+
+networks:
+  coolify:
+    name: coolify
+    external: true
+```
+
+---
+
+### Step 8: Coolify PaaS Registration & Domain Routing
+
+1. Open Coolify: `http://192.168.1.68:8000` (or `http://10.8.0.1:8000` via WireGuard).
+2. Go to your **Projects** $\rightarrow$ select your project (e.g. `Applications` or `Mini-Projects`).
+3. Click **+ New Resource** $\rightarrow$ **Application** $\rightarrow$ **GitHub App** (`daniel-github`).
+4. Select your repo: `P1gBagPt-Homelab/<repo-name>` and branch `main`.
+5. Under **Domains**:
+   * Add: `https://<app_name>.janus-lab.duckdns.org`
+   * Internal Port: Match your container port (e.g. `3000` or `8000`).
+   * Traefik will automatically issue a Let's Encrypt SSL certificate!
+6. Note the application's unique **UUID** from the browser URL (e.g. `rvi8hu1owmes3shdpsiuyz3q`).
+
+---
+
+### Step 9: Automated CI/CD (GitHub Actions)
+
+Add continuous deployment so pushing to `main` instantly updates the running container on your server:
+
+1. **Add Repository Secrets** in GitHub (`Settings > Secrets and variables > Actions`):
+   * `COOLIFY_HOST`: `http://192.168.1.68:8000`
+   * `COOLIFY_UUID`: `<app-uuid-from-step-8>`
+   * `COOLIFY_TOKEN`: `<your-coolify-api-token>`
+
+2. **Add `.github/workflows/deploy.yml`**:
+   ```yaml
+   name: Deploy to Project Janus
+
+   on:
+     push:
+       branches:
+         - main
+     workflow_dispatch:
+
+   jobs:
+     deploy:
+       name: Trigger Coolify Redeploy
+       runs-on: self-hosted
+       steps:
+         - name: Trigger Coolify Deployment
+           env:
+             COOLIFY_HOST: ${{ secrets.COOLIFY_HOST }}
+             COOLIFY_UUID: ${{ secrets.COOLIFY_UUID }}
+             COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+           run: |
+             echo "🚀 Triggering deployment on Janus..."
+             RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+               -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
+               -H "Content-Type: application/json" \
+               "${COOLIFY_HOST}/api/v1/deploy?uuid=${COOLIFY_UUID}&force=false")
+             
+             HTTP_STATUS=$(echo "${RESPONSE}" | tail -n1)
+             if [ "${HTTP_STATUS}" -eq 200 ]; then
+               echo "✅ Deployment queued successfully on Coolify!"
+             else
+               echo "❌ Coolify deployment failed with HTTP ${HTTP_STATUS}"
+               exit 1
+             fi
+   ```
+
+---
+
+### Step 10: Observability, Alerts & Portal Listing
+
+Complete the operational lifecycle so you always know your app is healthy:
+
+1. **Uptime Kuma Health Check**:
+   * Visit `https://status.janus-lab.duckdns.org`.
+   * Click **+ Add New Monitor**.
+   * Type: `HTTP(s)` $\rightarrow$ URL: `https://<app_name>.janus-lab.duckdns.org/health` (or `/`).
+   * Heartbeat: `60 seconds`.
+   * *Outcome:* You get immediate Discord/Telegram alerts if the app crashes or throws 500 errors.
+
+2. **JanusDeck Listing**:
+   * Visit `https://control.janus-lab.duckdns.org`.
+   * Click **+ Add Service** $\rightarrow$ Name: `<App Name>`, URL: `https://<app_name>.janus-lab.duckdns.org`, Category: `Mini-Projects`.
+   * *Outcome:* App appears in your central launcher with real-time green/red availability indicators.
+
+3. **Automated Nightly Backups**:
+   * Any database created in PostgreSQL 18 is automatically included in `/data/scripts/backup-janus.sh`.
+   * If your app stores critical files outside PostgreSQL, verify its directory under `/data/volumes/<app_name>` is listed in the backup tar list to be encrypted via Rclone Crypt to your **5 TB Google Drive**.
+
+---
+
+## 4. Quick Reference Cheatsheet
+
+### Core Endpoints & Internal Hostnames:
+| Service | Internal Docker Hostname | External Public / VPN URL | Port |
+| :--- | :--- | :--- | :--- |
+| **Coolify PaaS** | Host LAN | `http://192.168.1.68:8000` / `http://10.8.0.1:8000` | `8000` |
+| **Shared PostgreSQL 18** | `o4nipot4qcoaskqwss3zf6bq` | *Internal only via Docker/WireGuard* | `5432` |
+| **Shared Redis 7.2** | `<redis-container-id>` | *Internal only via Docker/WireGuard* | `6379` |
+| **MinIO S3 API** | `minio` | `https://s3.janus-lab.duckdns.org` | `9000` |
+| **MinIO Console** | `minio` | `https://minio.janus-lab.duckdns.org` | `9001` |
+| **Ollama AI (RTX 2070)** | `ollama` | `https://ai.janus-lab.duckdns.org` | `11434` |
+| **Uptime Kuma** | `uptime-kuma` | `https://status.janus-lab.duckdns.org` | `3001` |
+| **JanusDeck** | `janusdeck` | `https://control.janus-lab.duckdns.org` | `8080` |
+| **Vaultwarden** | `vaultwarden` | `https://vault.janus-lab.duckdns.org` | `80` |
+
+### Handy CLI Commands:
+```bash
+# Check running containers and statuses
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+# Stream logs of an application container
+docker logs -f --tail 100 <container-name>
+
+# Check GPU utilization & VRAM during AI inference
+nvidia-smi
+
+# Check self-hosted GitHub Actions runner status
+sudo systemctl status actions.runner.P1gBagPt-Homelab.janus.service
+```

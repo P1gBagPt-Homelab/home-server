@@ -42,6 +42,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **11** | [JanusDeck Portal](guides/11-janus-deck-command-center.md) | ✅ Completed | Svelte 5 + FastAPI, RTX 2070 telemetry, PIN gate, Windows switch |
 | **12** | [Local AI on Coolify](guides/12-local-ai-stack-coolify-setup.md) | ⏳ Ready to Deploy | Ollama + Open WebUI, RTX 2070 GPU pass-through, `ai.janus-lab` |
 | **13** | [MinIO S3 Storage](guides/13-minio-s3-object-storage-setup.md) | ⏳ Ready to Deploy | Multi-tenant S3 API, per-project IAM isolation, HDD cold storage |
+| **14** | [New Project Playbook](guides/14-new-project-playbook.md) | ✅ Completed | End-to-end blueprint: shared Postgres, S3, GPU AI, CI/CD, Traefik SSL & monitoring |
 
 ---
 
@@ -125,6 +126,12 @@ A documentation repository and operational guide for running a dual-purpose pers
     * High-capacity storage mapping to the 1TB cold storage HDD (`/data/storage/minio`).
     * Ready-to-use connection examples for Node.js (`@aws-sdk/client-s3`), Python (`boto3`), and Docker `.env`.
     * Nightly encrypted backup integration with Google Drive via Rclone Crypt (Guide 10).
+
+14. [**Guide 14: New Mini-Project Playbook & Centralized Blueprint**](guides/14-new-project-playbook.md)
+    * Standardized 10-step checklist for bootstrapping and deploying any new homelab application.
+    * Multi-tenant provisioning for shared PostgreSQL 18, Redis 7.2, and MinIO S3.
+    * Direct container-to-container GPU acceleration with Ollama (`llama3.1:8b`, RTX 2070).
+    * Automated CI/CD on push via GitHub Actions runner, Traefik wildcard SSL, and Uptime Kuma alerts.
 
 ---
 
