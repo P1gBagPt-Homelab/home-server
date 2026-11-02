@@ -1,6 +1,6 @@
 # Guide 15: Centralized Message Broker with RabbitMQ
 
-> **Status**: ⏳ **Ready to Deploy on Project Janus**  
+> **Status**: ✅ **Implemented & Verified on Project Janus**  
 > * **Platform**: Coolify PaaS (Docker Compose)  
 > * **Service Name**: `rabbitmq` (in `Infrastructure` or `Core Services` project)  
 > * **Management Web UI**: `https://queue.janus-lab.duckdns.org` (Port 15672)  
@@ -110,8 +110,8 @@ networks:
    * **Domain**: `https://queue.janus-lab.duckdns.org`
    * **Port**: `15672`
    * **Protocol**: `HTTP -> HTTPS`
-3. Click **Save** and trigger a **Deploy** from the top-right button.
-4. Traefik will automatically provision a Let's Encrypt wildcard SSL certificate for `https://queue.janus-lab.duckdns.org`.
+3. Click **Save** (if Coolify displays a warning popup *"This service requires port 5672 to function correctly"*, click **"Use This Port Anyway"**—port 15672 is the HTTP Web UI, whereas 5672 is binary AMQP).
+4. Click **Deploy** from the top-right button. Traefik will automatically provision a Let's Encrypt wildcard SSL certificate for `https://queue.janus-lab.duckdns.org`.
 
 ---
 

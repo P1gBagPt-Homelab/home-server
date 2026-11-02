@@ -1,6 +1,6 @@
 # Guide 16: Centralized Observability Stack (Grafana, Prometheus, cAdvisor & Loki)
 
-> **Status**: ⏳ **Ready to Deploy on Project Janus**  
+> **Status**: ✅ **Implemented & Verified on Project Janus**  
 > * **Platform**: Coolify PaaS (Docker Compose)  
 > * **Stack**: Grafana (Visual Dashboards), Prometheus (Time-Series Metrics DB), cAdvisor (Per-Container Hardware Profiling), Loki & Promtail (Centralized Container Logs)  
 > * **Grafana Web UI**: `https://grafana.janus-lab.duckdns.org` (Port 3000)  
@@ -216,8 +216,8 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
-    ports:
-      - "8080:8080"
+    # Note: No host port binding needed; Prometheus scrapes cadvisor:8080 internally.
+    # Exposing 8080 on the host clashes with Traefik (coolify-proxy).
     networks:
       - coolify
 
@@ -254,12 +254,14 @@ networks:
 ```
 
 ### Step 3: Domain & Traefik SSL Setup
-1. In the **`Observability-Stack`** resource in Coolify, go to the **Domains** tab for the `grafana` service:
+1. In the **`Observability-Stack`** resource in Coolify, go to the **Domains** tab:
+2. Click **+ Add Domain**:
+   * **Service application**: Select **`grafana (grafana/grafana:latest)`** *(Important: ensure it is `grafana`, not `cadvisor`)*
    * **Domain**: `https://grafana.janus-lab.duckdns.org`
    * **Port**: `3000`
    * **Protocol**: `HTTP -> HTTPS`
-2. Click **Save** and click **Deploy**.
-3. Traefik will configure wildcard SSL for `https://grafana.janus-lab.duckdns.org`.
+3. Click **Save** and click **Deploy**.
+4. Traefik will automatically provision wildcard SSL for `https://grafana.janus-lab.duckdns.org`.
 
 ---
 
