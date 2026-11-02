@@ -45,6 +45,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **14** | [New Project Playbook](guides/14-new-project-playbook.md) | ✅ Completed | End-to-end blueprint: shared Postgres, S3, GPU AI, CI/CD, Traefik SSL & monitoring |
 | **15** | [RabbitMQ Message Broker](guides/15-rabbitmq-message-broker-setup.md) | ⏳ Ready to Deploy | Centralized AMQP broker, vhost isolation, Management UI & Prometheus |
 | **16** | [Observability Stack](guides/16-observability-grafana-prometheus-cadvisor.md) | ⏳ Ready to Deploy | Grafana, Prometheus, cAdvisor & Loki for per-container CPU/RAM & logs |
+| **17** | [Jellyfin Streaming](guides/17-jellyfin-media-streaming.md) | ✅ Completed | Jellyfin PaaS on Coolify, Traefik SSL (`stream.janus-lab`), RTX 2070 NVENC, Xiaomi TV ready |
 
 ---
 
@@ -146,6 +147,12 @@ A documentation repository and operational guide for running a dual-purpose pers
     * Prometheus time-series scraping for cAdvisor, RabbitMQ, and mini-project `/metrics`.
     * Google cAdvisor per-container CPU & RAM profiling.
     * Grafana Loki & Promtail for timestamp-aligned container log queries and error correlation.
+
+17. [**Guide 17: Jellyfin Media Streaming & Hardware Transcoding**](guides/17-jellyfin-media-streaming.md)
+    * Open-source personal Netflix/media server setup on Docker via Coolify.
+    * High-speed metadata and cache on SSD pool + video storage on 1TB HDD (`/data/storage/media`).
+    * RTX 2070 NVIDIA NVENC hardware transcoding configuration (or i7-8700K QuickSync).
+    * Xiaomi Google TV setup with official Android TV app and LAN auto-discovery.
 
 ---
 
