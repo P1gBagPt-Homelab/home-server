@@ -40,6 +40,8 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **09** | [System Hardening](guides/09-system-hardening-and-maintenance.md) | ✅ Completed | RTC clock sync (`timedatectl`), UFW, Fail2ban, unattended-upgrades |
 | **10** | [Automated Backups](guides/10-automated-backups-and-recovery.md) | ✅ Completed | Rclone Crypt AES-256 to 5TB Google Drive, automated snapshots |
 | **11** | [JanusDeck Portal](guides/11-janus-deck-command-center.md) | ✅ Completed | Svelte 5 + FastAPI, RTX 2070 telemetry, PIN gate, Windows switch |
+| **12** | [Local AI on Coolify](guides/12-local-ai-stack-coolify-setup.md) | ⏳ Ready to Deploy | Ollama + Open WebUI, RTX 2070 GPU pass-through, `ai.janus-lab` |
+| **13** | [MinIO S3 Storage](guides/13-minio-s3-object-storage-setup.md) | ⏳ Ready to Deploy | Multi-tenant S3 API, per-project IAM isolation, HDD cold storage |
 
 ---
 
@@ -110,6 +112,20 @@ A documentation repository and operational guide for running a dual-purpose pers
     * PIN-guarded physical host actions: graceful shutdown, reboot, 5-second abort countdown, and one-click remote switch to Windows gaming mode (`grub-reboot`).
     * Automated CI/CD pipeline triggered by GitHub Actions organization runner directly into Coolify.
 
+12. [**Guide 12: Local AI Stack Deployment on Coolify (Ollama + Open WebUI)**](guides/12-local-ai-stack-coolify-setup.md)
+    * Deploying Ollama and Open WebUI as a Docker Compose stack inside Coolify.
+    * Passing through the ASUS ROG Strix RTX 2070 GPU using the NVIDIA Container Toolkit.
+    * Routing external access to `https://ai.janus-lab.duckdns.org` with automatic Let's Encrypt SSL via Traefik.
+    * 100% SSD storage configuration (`/data/ai/ollama` and `/data/ai/open-webui`) for instantaneous model cold-starts.
+    * Exposing port 11434 for local developer tooling (VS Code Continue.dev coding copilot).
+
+13. [**Guide 13: Self-Hosted S3 Object Storage with MinIO & Project Isolation**](guides/13-minio-s3-object-storage-setup.md)
+    * Centralized S3-compatible storage cluster deployed on Coolify with Traefik SSL (`s3.janus-lab.duckdns.org` & `minio.janus-lab.duckdns.org`).
+    * Strict project isolation: dedicated per-project buckets and scoped IAM policies/keys with zero cross-bucket read/write access.
+    * High-capacity storage mapping to the 1TB cold storage HDD (`/data/storage/minio`).
+    * Ready-to-use connection examples for Node.js (`@aws-sdk/client-s3`), Python (`boto3`), and Docker `.env`.
+    * Nightly encrypted backup integration with Google Drive via Rclone Crypt (Guide 10).
+
 ---
 
 ## 📌 Architecture Highlights
@@ -166,6 +182,12 @@ A documentation repository and operational guide for running a dual-purpose pers
    * Core infrastructure (Dockge manager & Nginx Proxy Manager).
    * Mini-project template with isolated database containers.
    * Future AI readiness: NVIDIA Container Toolkit for running GPU-accelerated LLMs (Ollama + Open-WebUI).
+
+9. [**08. Local AI Strategy, Architecture & Management Guide**](docs/08-local-ai-strategy-and-stack.md)
+   * Multi-layer homelab AI stack: Inference engines (Ollama, vLLM), routing (LiteLLM), and interfaces (Open WebUI).
+   * Hardware capability matrix for RTX 2070 (8GB VRAM) and 40GB RAM.
+   * Top homelab AI projects: Private ChatGPT with RAG, VS Code Continue.dev copilot, n8n automation agents, and Immich media indexing.
+   * Production Docker Compose blueprints and VRAM management strategies.
 
 ---
 
