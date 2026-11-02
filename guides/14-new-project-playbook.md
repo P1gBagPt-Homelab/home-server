@@ -132,29 +132,86 @@ If your app needs Celery, BullMQ, Redis caching, or session storage:
 
 ### Step 4: MinIO S3 Object Storage (Media & Files)
 
-If your project handles file uploads, PDF processing, or image hosting:
+If your project handles file uploads, PDF processing, or media hosting:
 
-1. **Access MinIO Console**: `https://minio.janus-lab.duckdns.org` (or over WireGuard).
-2. **Create Bucket**: Name it after your project (e.g. `smart-receipts`).
-3. **Create Dedicated Service Account (Access Key + Secret Key)**:
-   * Navigate to **Identity > Service Accounts > Create Service Account**.
-   * Restrict IAM policy strictly to your bucket:
-     ```json
-     {
-       "Version": "2012-10-17",
-       "Statement": [
-         {
-           "Effect": "Allow",
-           "Action": ["s3:*"],
-           "Resource": ["arn:aws:s3:::smart-receipts", "arn:aws:s3:::smart-receipts/*"]
-         }
-       ]
-     }
-     ```
-4. **Connection Endpoints**:
-   * **Internal (Container-to-Container via Docker)**: `http://minio:9000` *(Zero network latency, no internet routing)*.
-   * **External (Client Browser / Frontend uploads)**: `https://s3.janus-lab.duckdns.org`.
-   * **Region**: `us-east-1` (MinIO default).
+> [!NOTE]
+> IAM policies and service accounts are provisioned via the `mc` CLI on Janus (the Community Edition web console is strictly an object browser).
+
+#### 1. Instant Provisioning Script (5 Seconds)
+SSH into Janus and run this single block (replace `PROJECT_NAME="smart-receipts"` with your new project name):
+
+```bash
+PROJECT_NAME="smart-receipts"
+BUCKET_NAME="${PROJECT_NAME}-data"
+USER_NAME="${PROJECT_NAME}-user"
+USER_SECRET=$(openssl rand -base64 24)
+
+# 1. Create isolated bucket
+mc mb "janus/${BUCKET_NAME}"
+
+# 2. Create isolated IAM policy file
+cat << EOF > /tmp/${PROJECT_NAME}-policy.json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowListBucket",
+      "Effect": "Allow",
+      "Action": ["s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::${BUCKET_NAME}"]
+    },
+    {
+      "Sid": "AllowAllObjectActionsInsideBucket",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+      "Resource": ["arn:aws:s3:::${BUCKET_NAME}/*"]
+    }
+  ]
+}
+EOF
+
+# 3. Register policy, create user, and attach policy
+mc admin policy create janus "${PROJECT_NAME}-policy" /tmp/${PROJECT_NAME}-policy.json
+mc admin user add janus "${USER_NAME}" "${USER_SECRET}"
+mc admin policy attach janus "${PROJECT_NAME}-policy" --user "${USER_NAME}"
+rm /tmp/${PROJECT_NAME}-policy.json
+
+# 4. (Optional) If files are public images/downloads rendered directly in web browsers:
+# mc anonymous set download "janus/${BUCKET_NAME}"
+
+# 5. Output ready-to-copy credentials
+echo ""
+echo "=== PROVISIONED S3 CREDENTIALS FOR ${PROJECT_NAME} ==="
+echo "S3_ENDPOINT=https://s3.janus-lab.duckdns.org (or http://minio:9000)"
+echo "S3_BUCKET=${BUCKET_NAME}"
+echo "S3_ACCESS_KEY=${USER_NAME}"
+echo "S3_SECRET_KEY=${USER_SECRET}"
+echo "S3_FORCE_PATH_STYLE=true"
+echo "S3_REGION=us-east-1"
+```
+
+#### 2. Public vs. Private Buckets
+* **Public Web Assets (Blog images, avatars, wiki media)**: Run `mc anonymous set download janus/<bucket-name>`. Anyone can view/download images in the browser via `{ENDPOINT}/{BUCKET}/{FILE}`, but only `<project>-user` can upload or delete.
+* **Private Documents (Invoices, database backups, user documents)**: Leave default (no anonymous command). Requires signed URLs or S3 credentials to read and write.
+
+#### 3. Standard Environment Variables Pattern
+In your application `.env` or Coolify compose:
+
+```env
+# If app is running inside the Coolify Docker network:
+S3_ENDPOINT=http://minio:9000
+# If app is external, or generates URLs rendered directly by browsers:
+# S3_ENDPOINT=https://s3.janus-lab.duckdns.org
+
+S3_BUCKET=smart-receipts-data
+S3_ACCESS_KEY=smart-receipts-user
+S3_SECRET_KEY=YourProvisionedSecretKey
+S3_REGION=us-east-1
+S3_FORCE_PATH_STYLE=true
+
+# For Node.js apps connecting via HTTPS to internal Traefik certs:
+# NODE_TLS_REJECT_UNAUTHORIZED=0
+```
 
 ---
 

@@ -128,6 +128,7 @@ A documentation repository and operational guide for running a dual-purpose pers
     * Strict project isolation: dedicated per-project buckets and scoped IAM policies/keys with zero cross-bucket read/write access.
     * High-capacity storage mapping to the 1TB cold storage HDD (`/data/storage/minio`).
     * Ready-to-use connection examples for Node.js (`@aws-sdk/client-s3`), Python (`boto3`), and Docker `.env`.
+    * Verified production integration with Docmost wiki for media attachments and file uploads.
     * Nightly encrypted backup integration with Google Drive via Rclone Crypt (Guide 10).
 
 14. [**Guide 14: New Mini-Project Playbook & Centralized Blueprint**](guides/14-new-project-playbook.md)

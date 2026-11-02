@@ -59,6 +59,7 @@ Coolify stores all application configurations, Docker persistent volumes, and da
 │   ├── uptime-kuma/              # Uptime Kuma v2 monitor configurations & SQLite DB
 │   └── jellyfin/                 # Jellyfin metadata, user configs & fast transcoding cache
 ├── storage/                      # 1TB HDD mount point (SAMSUNG HD103SJ)
+│   ├── minio/                    # Central S3 object storage (per-project buckets)
 │   ├── backups/                  # 14-day rolling snapshots
 │   └── media/                    # Media mass storage (movies, tv)
 ├── projects/                     # Git clone directories and build caches
@@ -73,6 +74,7 @@ Coolify stores all application configurations, Docker persistent volumes, and da
 In Coolify, shared services are created through the UI with one click:
 * **PostgreSQL 18**: Central database container running on the shared `coolify` network.
 * **Redis 7.2**: Central in-memory caching and queuing service.
+* **MinIO S3**: Central S3-compatible object storage with isolated per-project IAM buckets (`s3.janus-lab.duckdns.org`).
 * **Docmost**: Centralized documentation wiki running alongside your apps.
 * **Jellyfin**: Hardware-accelerated media streaming server (`https://stream.janus-lab.duckdns.org` and `http://192.168.1.68:8096`).
 * **Uptime Kuma v2**: Uptime monitoring and instant incident notification gateway (`status.janus-lab.duckdns.org` or `http://192.168.1.68:3001`).
