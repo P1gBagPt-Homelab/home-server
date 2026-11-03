@@ -46,6 +46,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **15** | [RabbitMQ Message Broker](guides/15-rabbitmq-message-broker-setup.md) | ✅ Completed | Centralized AMQP broker, vhost isolation, Management UI (`queue.janus-lab`) & Prometheus |
 | **16** | [Observability Stack](guides/16-observability-grafana-prometheus-cadvisor.md) | ✅ Completed | Grafana (`grafana.janus-lab`), Prometheus, cAdvisor & Loki for per-container CPU/RAM & logs |
 | **17** | [Jellyfin Streaming](guides/17-jellyfin-media-streaming.md) | ✅ Completed | Jellyfin PaaS on Coolify, Traefik SSL (`stream.janus-lab`), RTX 2070 NVENC, Xiaomi TV ready |
+| **18** | [GlitchTip Error Tracking](guides/18-application-error-tracking-glitchtip.md) | 🚀 Ready to Deploy | Lightweight Sentry alternative (`errors.janus-lab`), full stack traces & crash alerts |
 
 ---
 
@@ -154,6 +155,12 @@ A documentation repository and operational guide for running a dual-purpose pers
     * High-speed metadata and cache on SSD pool + video storage on 1TB HDD (`/data/storage/media`).
     * RTX 2070 NVIDIA NVENC hardware transcoding configuration (or i7-8700K QuickSync).
     * Xiaomi Google TV setup with official Android TV app and LAN auto-discovery.
+
+18. [**Guide 18: Application Error & Crash Tracking with GlitchTip (Sentry)**](guides/18-application-error-tracking-glitchtip.md)
+    * Lightweight open-source Sentry alternative deployed on Coolify (https://errors.janus-lab.duckdns.org).
+    * Captures runtime crashes, in-memory variable dumps, and line-by-line call stacks across Python, Node.js, and .NET.
+    * Uses shared PostgreSQL 18 and Redis 7.2 (<250 MB RAM vs 16GB for official Sentry).
+    * Discord/Telegram alert integration for immediate critical incident notifications.
 
 ---
 
