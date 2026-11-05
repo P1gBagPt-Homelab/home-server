@@ -65,7 +65,7 @@ While **Prometheus + Grafana** (Guide 16) monitors server load and **Loki** stor
 | Metric / Requirement | Official Self-Hosted Sentry | GlitchTip on Janus |
 | :--- | :--- | :--- |
 | **Idle RAM Footprint** | **12 GB – 16 GB RAM** | **~180 MB – 250 MB RAM** |
-| **Containers Required** | 18 – 22 containers (Kafka, ClickHouse, Snuba, Relay, Zookeeper, etc.) | **2 lightweight containers** (`web` + `worker`) |
+| **Containers Required** | 18 – 22 containers (Kafka, ClickHouse, Snuba, Relay, Zookeeper, etc.) | **3 lightweight services** (`migrate` one-shot, `web` + `worker`) |
 | **Database** | Heavy multi-engine cluster | Reuses existing **PostgreSQL 18** & **Redis 7.2** |
 | **Client SDKs** | Uses official Sentry SDKs | **Uses identical official Sentry SDKs** (drop-in replacement) |
 | **Maintenance** | Complex migrations & high disk I/O | Zero-maintenance single Docker image updates |
@@ -123,7 +123,7 @@ sudo chmod -R 770 /data/volumes/glitchtip
 
 ## 3. Coolify Deployment Walkthrough
 
-GlitchTip runs cleanly as a 2-service Docker Compose application inside Coolify.
+GlitchTip runs cleanly as a 3-service Docker Compose application (`migrate`, `web`, `worker`) inside Coolify.
 
 ### Step 1: Create Resource in Coolify
 1. In your Coolify dashboard, open your **`Infrastructure`** or **`Core Services`** project.
@@ -139,10 +139,23 @@ Paste the following Docker Compose configuration into Coolify:
 version: '3.8'
 
 services:
+  migrate:
+    image: glitchtip/glitchtip:latest
+    container_name: glitchtip-migrate
+    command: ./bin/run-migrate.sh
+    environment:
+      - DATABASE_URL=postgresql://glitchtip:YOUR_POSTGRES_PASSWORD@POSTGRES_CONTAINER_ID:5432/glitchtip
+      - REDIS_URL=redis://:YOUR_REDIS_PASSWORD@REDIS_CONTAINER_ID:6379/2
+      - SECRET_KEY=GENERATE_64_CHAR_SECRET_KEY
+    networks:
+      - coolify
+
   web:
     image: glitchtip/glitchtip:latest
     container_name: glitchtip-web
     restart: unless-stopped
+    depends_on:
+      - migrate
     ports:
       - "8000"
     environment:
@@ -150,7 +163,7 @@ services:
       - REDIS_URL=redis://:YOUR_REDIS_PASSWORD@REDIS_CONTAINER_ID:6379/2
       - SECRET_KEY=GENERATE_64_CHAR_SECRET_KEY
       - GLITCHTIP_DOMAIN=https://errors.janus-lab.duckdns.org
-      - ENABLE_OPEN_USER_REGISTRATION=True
+      - ENABLE_USER_REGISTRATION=True
       - DEFAULT_FROM_EMAIL=glitchtip@janus-lab.duckdns.org
       - EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
       - I_PAID_FOR_GLITCHTIP=True
@@ -164,11 +177,14 @@ services:
     container_name: glitchtip-worker
     restart: unless-stopped
     command: ./bin/run-celery-with-beat.sh
+    depends_on:
+      - migrate
     environment:
       - DATABASE_URL=postgresql://glitchtip:YOUR_POSTGRES_PASSWORD@POSTGRES_CONTAINER_ID:5432/glitchtip
       - REDIS_URL=redis://:YOUR_REDIS_PASSWORD@REDIS_CONTAINER_ID:6379/2
       - SECRET_KEY=GENERATE_64_CHAR_SECRET_KEY
       - GLITCHTIP_DOMAIN=https://errors.janus-lab.duckdns.org
+      - ENABLE_USER_REGISTRATION=True
       - DEFAULT_FROM_EMAIL=glitchtip@janus-lab.duckdns.org
       - EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
       - I_PAID_FOR_GLITCHTIP=True
@@ -188,7 +204,7 @@ networks:
 > ```bash
 > openssl rand -hex 32
 > ```
-> Paste this value into `SECRET_KEY` for both `web` and `worker`.
+> Paste this value into `SECRET_KEY` for all three services (`migrate`, `web`, and `worker`).
 
 ### Step 3: Domain & Traefik SSL Routing
 1. In the Coolify resource configuration, click the **web** service.
@@ -201,13 +217,13 @@ networks:
 
 ### Step 4: Deploy
 Click **Deploy** in the top right corner. 
-On the first run, GlitchTip will automatically execute all Django database migrations on PostgreSQL 18. This takes ~30 seconds.
+On deploy, the `migrate` service runs `./bin/run-migrate.sh` first to execute all Django database migrations on PostgreSQL 18. Once finished, `web` and `worker` start cleanly.
 
 ---
 
 ## 4. Initial Account & Security Hardening
 
-### 1. Register Your Administrator Account
+### Option A: Web Registration (Temporarily Enabled)
 1. Open your browser and navigate to:
    ```text
    https://errors.janus-lab.duckdns.org/register
@@ -215,15 +231,24 @@ On the first run, GlitchTip will automatically execute all Django database migra
 2. Enter your email (e.g. `daniel@...`) and set your master password.
 3. Click **Sign Up**. You will be logged into your new GlitchTip instance.
 
-### 2. Lock Down Open Registration
+### Option B: CLI Superuser Creation (Bypasses Web Registration)
+If you prefer not opening registration even temporarily, run directly on Janus:
+```bash
+docker exec -it glitchtip-web ./manage.py createsuperuser
+```
+Follow the interactive prompt for email and password, then log in directly at `/login`.
+
+### Lock Down Open Registration
 Because your instance is reachable via Traefik over DuckDNS, **disable public registration** immediately so strangers cannot create accounts on your crash tracker:
 
 1. In Coolify, open the `glitchtip` Docker Compose file.
-2. Change:
+2. Under both `web` and `worker`, change:
    ```yaml
-   - ENABLE_OPEN_USER_REGISTRATION=False
+   - ENABLE_USER_REGISTRATION=False
    ```
-3. Click **Redeploy**. Existing accounts remain active, but the `/register` endpoint is disabled.
+   > [!NOTE]
+   > Modern GlitchTip uses `ENABLE_USER_REGISTRATION` (the legacy variable `ENABLE_OPEN_USER_REGISTRATION` is deprecated and ignored).
+3. Click **Redeploy**. Existing accounts remain active, but the `/register` endpoint is completely locked down.
 
 ---
 
