@@ -47,6 +47,8 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **16** | [Observability Stack](guides/16-observability-grafana-prometheus-cadvisor.md) | ✅ Completed | Grafana (`grafana.janus-lab`), Prometheus, cAdvisor & Loki for per-container CPU/RAM & logs |
 | **17** | [Jellyfin Streaming](guides/17-jellyfin-media-streaming.md) | ✅ Completed | Jellyfin PaaS on Coolify, Traefik SSL (`stream.janus-lab`), RTX 2070 NVENC, Xiaomi TV ready |
 | **18** | [GlitchTip Error Tracking](guides/18-application-error-tracking-glitchtip.md) | 🚀 Ready to Deploy | Lightweight Sentry alternative (`errors.janus-lab`), full stack traces & crash alerts |
+| **19** | [Network Hardening (Zero Exposure)](guides/19-network-hardening-dns01-and-private-access.md) | 🛡️ Active Hardening | Closed Ports 80 & 443, DuckDNS DNS-01 SSL challenges, 100% WireGuard-only privacy |
+| **20** | [Janus Unified CLI](guides/20-janus-unified-cli.md) | ⚡ Ready to Use | Terminal dashboard (`janus status`), 1-click Windows switch, manual backup & log tailing |
 
 ---
 
@@ -162,6 +164,17 @@ A documentation repository and operational guide for running a dual-purpose pers
     * Uses shared PostgreSQL 18 and Redis 7.2 (<250 MB RAM vs 16GB for official Sentry).
     * Discord/Telegram alert integration for immediate critical incident notifications.
 
+19. [**Guide 19: Network Hardening — Transition to Zero Public Exposure (DNS-01 SSL & WireGuard-Only)**](guides/19-network-hardening-dns01-and-private-access.md)
+    * Complete elimination of public web attack vectors: Router ports 80 and 443 permanently closed.
+    * Automated Let's Encrypt Wildcard SSL certificates provisioned via DuckDNS DNS-01 API challenges (zero inbound web traffic required).
+    * 100% stealth homelab perimeter: Only silent WireGuard UDP 51820 is open, dropping unauthenticated scans without responding.
+    * Penetration test runbook and one-click rollback procedures.
+
+20. [**Guide 20: Janus Unified CLI — Terminal Command Center**](guides/20-janus-unified-cli.md)
+    * Single command interface (`/usr/local/bin/janus`) wrapping Docker, UFW, NVIDIA telemetry, and GRUB.
+    * Real-time hardware telemetry dashboard (`janus status`) with colored usage bars for CPU, 40GB RAM, NVMe/HDD storage, and RTX 2070 GPU VRAM.
+    * Safe dual-boot switch (`janus to-windows`), manual backup triggers (`janus backup`), and fuzzy container log tailing (`janus logs <service>`).
+
 ---
 
 ## 📌 Architecture Highlights
@@ -171,7 +184,7 @@ A documentation repository and operational guide for running a dual-purpose pers
   * **Disks 3 & 4 (ext4/ZFS)**: Dedicated Ubuntu Server 24.04 LTS, Docker containers, and storage pool. Windows cannot read or modify these filesystems natively.
 * **Boot Management**: GRUB configured to auto-boot to **Ubuntu Server** on remote power-on, with `grub-reboot` support for one-shot remote boots into Windows.
 * **Remote Power Control**: Internal **PCIe WiFi Power Switch Card** (WETEN JH-PcPro) connected to ASUS `PANEL` header `PWR_SW` pins. Provides safe one-tap ACPI graceful shutdowns and instant remote turn-ons.
-* **Remote Access**: Self-hosted WireGuard VPN (via `wg-easy` container) + Dynamic DNS (DDNS). No third-party network relays required.
+* **Network & Remote Access (Zero Public Exposure)**: Self-hosted WireGuard VPN (via `wg-easy` container) + Dynamic DNS (DDNS). Ports 80 & 443 are **closed** on the router; all internal web services get valid Let's Encrypt SSL via DuckDNS DNS-01 challenges. Silent perimeter against internet botnets.
 * **Application & Monitoring Platform**: **Coolify PaaS** for Vercel-like Git-push deployments, 1-click PostgreSQL/Redis databases, Docmost wiki, **Uptime Kuma** alerts, and **Netdata** hardware/RTX 2070 telemetry.
 
 ---

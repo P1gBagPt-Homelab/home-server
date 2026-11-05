@@ -261,10 +261,11 @@ networks:
    * Click **Save**.
 7. In the top-right corner, click the dropdown next to the action button and click **Deploy** (or *Redeploy*).
 
-### Router Port Forwarding & SSL Padlock:
-Ensure your Vodafone router has Port Mapping rules for:
-* **Port 80 TCP** (`Traefik-HTTP` → `192.168.1.68`)
-* **Port 443 TCP** (`Traefik-HTTPS` → `192.168.1.68`)
+### Router Port Forwarding & SSL Padlock (DNS-01 Challenge):
+Project Janus uses **DuckDNS DNS-01 ACME challenges** in Traefik (detailed in [Guide 19](19-network-hardening-dns01-and-private-access.md)).
+* **No Router Web Forwarding**: You do **not** need to forward Ports 80 or 443 on your router!
+* Let's Encrypt communicates directly with DuckDNS's API in the cloud to verify domain ownership.
+* All SSL certificates (including wildcards) are provisioned securely and are accessible only inside your home LAN or via WireGuard VPN.
 
 > [!TIP]
 > **Getting the Secure SSL Padlock 🔒**:

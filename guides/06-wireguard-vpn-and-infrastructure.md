@@ -1,9 +1,10 @@
 # Guide 06: WireGuard VPN & Remote Access Gateway
 
-> **Status**: ✅ **Fully Deployed & Operational on Project Janus**  
+> **Status**: ✅ **Fully Deployed & Hardened on Project Janus**  
 > * **DDNS Domain**: `janus-lab.duckdns.org` (DuckDNS Cron sync active).
 > * **VPN Gateway**: `ghcr.io/wg-easy/wg-easy:14` (`51820/udp`, Dashboard on `http://192.168.1.68:51821`).
-> * **Router Forwarding**: UDP 51820, TCP 80, TCP 443 -> `192.168.1.68` (Vodafone Smart Router).
+> * **Router Forwarding**: **UDP 51820 ONLY** -> `192.168.1.68` (Vodafone Smart Router).
+> * **Zero Public Exposure**: Ports 80 & 443 are **closed** on the router; all SSL certificates are issued via DuckDNS DNS-01 challenges (see [Guide 19](19-network-hardening-dns01-and-private-access.md)).
 
 This guide walks you through setting up **Dynamic DNS (DuckDNS)**, forwarding the WireGuard UDP port on your home router, and deploying **`wg-easy`** (WireGuard VPN with a web dashboard) so you can connect to Project Janus and Coolify securely from anywhere.
 
@@ -21,7 +22,7 @@ Since home residential IP addresses periodically change, Dynamic DNS gives your 
 
 ## Step 2: Router Port Forwarding & Static IP (Vodafone Smart Router)
 
-To allow remote VPN access and web traffic through your home router:
+To allow secure remote VPN access through your home router:
 
 1. **Log in to Router Admin Panel**:
    * Open your browser and navigate to `http://192.168.1.1`.
@@ -29,14 +30,15 @@ To allow remote VPN access and web traffic through your home router:
    * In the top-right corner dropdown, select **`Modo Expert`**.
 3. **Configure Port Mapping (Port Forwarding)**:
    * In the top navigation bar, click **`Internet`** → **`Port Mapping`**.
-   * In the upper **Port Mapping** section, click the purple **`(+)`** button to create the rules:
+   * In the upper **Port Mapping** section, click the purple **`(+)`** button to create the single required rule:
      * **WireGuard Gateway** (VPN):
        * **Nome**: `WireGuard` | **Protocolo**: `UDP` | **Equipamento**: `janus` (`192.168.1.68`) | **Portas**: `51820`
-     * **Traefik Web & SSL Challenges** (Coolify):
-       * **Nome**: `Traefik-HTTP` | **Protocolo**: `TCP` | **Equipamento**: `janus` (`192.168.1.68`) | **Portas**: `80`
-     * **Traefik Encrypted HTTPS** (Web Services & Wiki):
-       * **Nome**: `Traefik-HTTPS` | **Protocolo**: `TCP` | **Equipamento**: `janus` (`192.168.1.68`) | **Portas**: `443`
-   * Click the purple **Confirmar** button at the bottom to save all rules to the router.
+   * Click the purple **Confirmar** button at the bottom to save the rule to the router.
+
+> [!IMPORTANT]
+> **Zero Public Web Exposure (Closed Ports 80 & 443)**:
+> In earlier setups, ports 80 and 443 were forwarded for Let's Encrypt HTTP challenges. **Do NOT forward ports 80 or 443 on your router.** Project Janus utilizes the **DuckDNS DNS-01 ACME challenge** in Traefik (see [Guide 19](19-network-hardening-dns01-and-private-access.md)), allowing Let's Encrypt to validate SSL through DuckDNS DNS records without opening any web ports to the public internet. All web traffic remains strictly accessible inside your LAN and through this encrypted WireGuard tunnel.
+
 4. **Ensure Static IP Reservation**:
    * In the top menu, go to **`Definições`** → **`Rede Local (LAN)`** (or click the `(i)` info icon on `janus` from the **`Visão geral`** dashboard) to verify that `janus` is bound to `192.168.1.68` permanently.
 

@@ -72,9 +72,9 @@ Block all uninvited incoming traffic by default, only opening the exact ports ne
    sudo ufw allow 51820/udp comment 'WireGuard VPN'
    sudo ufw allow 51821/tcp comment 'WireGuard Web UI'
 
-   # 3. Web & Traefik Reverse Proxy (Coolify / Docmost)
-   sudo ufw allow 80/tcp comment 'HTTP Web Traffic'
-   sudo ufw allow 443/tcp comment 'HTTPS Encrypted Web'
+   # 3. Web & Traefik Reverse Proxy (LAN & WireGuard clients only; closed on router)
+   sudo ufw allow 80/tcp comment 'HTTP Web Traffic (Internal)'
+   sudo ufw allow 443/tcp comment 'HTTPS Encrypted Web (Internal)'
 
    # 4. Management & Telemetry Dashboards
    sudo ufw allow 8000/tcp comment 'Coolify Dashboard'
