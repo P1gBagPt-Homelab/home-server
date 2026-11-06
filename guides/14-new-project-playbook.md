@@ -370,6 +370,7 @@ Add continuous deployment so pushing to `main` executes Bruno tests and linters 
      test:
        name: Lint & Bruno Smoke Tests
        runs-on: self-hosted  # 100% free runner on Janus
+       timeout-minutes: 5    # Never block runner if network or container hangs
        steps:
          - name: Checkout Code
            uses: actions/checkout@v4

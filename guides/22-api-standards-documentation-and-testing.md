@@ -321,6 +321,7 @@ jobs:
   test:
     name: Lint Spec & Run Bruno Tests
     runs-on: self-hosted  # Runs on your Janus server for $0
+    timeout-minutes: 5    # Hard safety cap: never hang runner
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
