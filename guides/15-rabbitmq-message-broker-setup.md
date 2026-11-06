@@ -3,7 +3,7 @@
 > **Status**: ✅ **Implemented & Verified on Project Janus**  
 > * **Platform**: Coolify PaaS (Docker Compose)  
 > * **Service Name**: `rabbitmq` (in `Infrastructure` or `Core Services` project)  
-> * **Management Web UI**: `https://queue.janus-lab.duckdns.org` (Port 15672)  
+> * **Management Web UI**: `https://queue.your-domain.duckdns.org` (Port 15672)  
 > * **AMQP Protocol Endpoint**: `amqp://rabbitmq:5672` (Internal `coolify` Docker network)  
 > * **Prometheus Metrics Port**: `http://rabbitmq:15692/metrics`  
 > * **Primary Storage**: `/data/volumes/rabbitmq` on SSD LVM Pool (~456 GB)  
@@ -21,7 +21,7 @@ As your homelab expands with mini-projects (FastAPI APIs, Next.js web applicatio
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        Traefik Reverse Proxy                           │
-│               https://queue.janus-lab.duckdns.org (Port 443)           │
+│               https://queue.your-domain.duckdns.org (Port 443)           │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │ Port 15672 (Management UI)
                                     ▼
@@ -107,11 +107,11 @@ networks:
 ### Step 3: Domain & Traefik SSL Setup
 1. In RabbitMQ's resource view in Coolify, go to the **Domains** tab.
 2. Click **+ Add Domain**:
-   * **Domain**: `https://queue.janus-lab.duckdns.org`
+   * **Domain**: `https://queue.your-domain.duckdns.org`
    * **Port**: `15672`
    * **Protocol**: `HTTP -> HTTPS`
 3. Click **Save** (if Coolify displays a warning popup *"This service requires port 5672 to function correctly"*, click **"Use This Port Anyway"**—port 15672 is the HTTP Web UI, whereas 5672 is binary AMQP).
-4. Click **Deploy** from the top-right button. Traefik will automatically provision a Let's Encrypt wildcard SSL certificate for `https://queue.janus-lab.duckdns.org`.
+4. Click **Deploy** from the top-right button. Traefik will automatically provision a Let's Encrypt wildcard SSL certificate for `https://queue.your-domain.duckdns.org`.
 
 ---
 
@@ -119,7 +119,7 @@ networks:
 
 Just like shared PostgreSQL (Guide 07/14), **never mix queues from different mini-projects into the default `/` vhost**. Always create an isolated virtual host and dedicated user.
 
-### Option A: Via Management Web UI (`https://queue.janus-lab.duckdns.org`)
+### Option A: Via Management Web UI (`https://queue.your-domain.duckdns.org`)
 1. Log in with your `janus-admin` credentials.
 2. Go to the **Admin** tab.
 3. Click **Virtual Hosts** $\rightarrow$ Add a new virtual host (e.g. `/my-app`).

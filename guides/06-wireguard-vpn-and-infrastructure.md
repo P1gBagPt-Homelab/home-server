@@ -1,7 +1,7 @@
 # Guide 06: WireGuard VPN & Remote Access Gateway
 
 > **Status**: ✅ **Fully Deployed & Hardened on Project Janus**  
-> * **DDNS Domain**: `janus-lab.duckdns.org` (DuckDNS Cron sync active).
+> * **DDNS Domain**: `your-domain.duckdns.org` (DuckDNS Cron sync active).
 > * **VPN Gateway**: `ghcr.io/wg-easy/wg-easy:14` (`51820/udp`, Dashboard on `http://192.168.1.68:51821`).
 > * **Router Forwarding**: **UDP 51820 ONLY** -> `192.168.1.68` (Vodafone Smart Router).
 > * **Zero Public Exposure**: Ports 80 & 443 are **closed** on the router; all SSL certificates are issued via DuckDNS DNS-01 challenges (see [Guide 19](19-network-hardening-dns01-and-private-access.md)).
@@ -12,10 +12,10 @@ This guide walks you through setting up **Dynamic DNS (DuckDNS)**, forwarding th
 
 ## Step 1: Set Up Free Dynamic DNS (DuckDNS)
 
-Since home residential IP addresses periodically change, Dynamic DNS gives your home server a permanent hostname (`janus-lab.duckdns.org`):
+Since home residential IP addresses periodically change, Dynamic DNS gives your home server a permanent hostname (`your-domain.duckdns.org`):
 
 1. Go to [https://www.duckdns.org](https://www.duckdns.org) and log in (via GitHub, Google, or Reddit).
-2. Under **Domains**, register your domain `janus-lab` and click **add domain**.
+2. Under **Domains**, register your domain (e.g. `your-domain`) and click **add domain**.
 3. Note your **DuckDNS Token** displayed at the top of the page.
 
 ---
@@ -82,7 +82,7 @@ services:
     restart: unless-stopped
     environment:
       # Your DuckDNS Domain
-      - WG_HOST=janus-lab.duckdns.org
+      - WG_HOST=your-domain.duckdns.org
       # Loaded cleanly from .env (no character escaping headaches)
       - PASSWORD_HASH=${PASSWORD_HASH}
       - WG_PORT=51820

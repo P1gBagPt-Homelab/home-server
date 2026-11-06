@@ -1,6 +1,6 @@
 # Guide 19: Network Hardening — Transition to Zero Public Exposure (DNS-01 SSL & WireGuard-Only)
 
-> **Status**: 🛡️ **Active Hardening Reconfiguration Playbook**  
+> **Status**: ✅ **Hardened & Active (Zero Public Exposure)**  
 > * **Objective**: Eliminate all public web attack vectors (close Router Ports 80 & 443) while maintaining automated Let's Encrypt SSL padlocks via DuckDNS DNS-01 challenges.
 > * **Security Level**: **100% Private Homelab** — reachable *only* via local LAN (`192.168.1.0/24`) and encrypted WireGuard VPN (`10.8.0.0/24`).
 > * **Router Forwarding**: Only UDP 51820 (WireGuard) remains open. Zero exposed HTTP/HTTPS ports.
@@ -18,9 +18,9 @@ In the initial bootstrap phase, home routers typically forward **Port 80 (HTTP)*
 ### The Solution: DuckDNS DNS-01 Challenge:
 Instead of Let's Encrypt knocking on your home server's front door (Port 80):
 1. **Traefik contacts DuckDNS directly** via its secure API using your `DUCKDNS_TOKEN`.
-2. Traefik creates a temporary TXT verification record on `janus-lab.duckdns.org`.
+2. Traefik creates a temporary TXT verification record on `your-domain.duckdns.org`.
 3. Let's Encrypt verifies the TXT record directly with DuckDNS's cloud servers.
-4. Let's Encrypt issues your wildcard SSL certificate (`*.janus-lab.duckdns.org`).
+4. Let's Encrypt issues your wildcard SSL certificate (`*.your-domain.duckdns.org`).
 
 **Result**: You receive valid, trusted HTTPS certificates with green padlocks for all your services **without opening a single web port on your router**.
 
@@ -40,9 +40,9 @@ You (Phone / Laptop)   ┼──────────────────
                                               ▼
                                  [Ubuntu Server (janus)]
                                  • Coolify (Traefik Proxy)
-                                 • JanusDeck (`control.janus-lab`)
-                                 • Vaultwarden (`vault.janus-lab`)
-                                 • Docmost Wiki (`docs.janus-lab`)
+                                 • JanusDeck (`control.your-domain`)
+                                 • Vaultwarden (`vault.your-domain`)
+                                 • Docmost Wiki (`docs.your-domain`)
                                  • MinIO, RabbitMQ, GlitchTip
 ```
 
@@ -111,14 +111,16 @@ Coolify manages Traefik via Docker Compose at `/data/coolify/proxy`. We will con
      ```
    Save and exit (`Ctrl+O`, `Enter`, `Ctrl+X`).
 
-5. Restart the Coolify proxy container to apply the changes:
+5. Recreate the Coolify proxy container with Docker Compose to apply the changes:
    ```bash
-   docker restart coolify-proxy
+   cd /data/coolify/proxy
+   docker compose up -d --force-recreate
    ```
+   *(Note: `docker restart coolify-proxy` will NOT reload changes from `docker-compose.yml`; you must use `docker compose up -d`).*
 
 6. Monitor the Traefik proxy startup logs to ensure there are no syntax errors:
    ```bash
-   docker logs -f coolify-proxy
+   docker logs --tail 50 -f coolify-proxy
    ```
    *(Look for lines confirming ACME DNS challenge initialization. Press `Ctrl+C` to exit logs).*
 
@@ -170,8 +172,8 @@ Before touching your router, verify that Traefik successfully generates certific
 
 1. Open your browser on your LAN (or while connected to WireGuard).
 2. Visit:
-   * `https://docs.janus-lab.duckdns.org`
-   * `https://control.janus-lab.duckdns.org`
+   * `https://docs.your-domain.duckdns.org`
+   * `https://control.your-domain.duckdns.org`
 3. Click the padlock icon in your browser address bar:
    * Certificate status should read: **Valid** (issued by **Let's Encrypt Authority**).
    * Connection should show **Secure (TLS 1.3)**.
@@ -200,7 +202,7 @@ Run these two quick tests to confirm your new security posture:
 ### Test 1: From the Outside (Public Internet)
 1. On your smartphone, **disconnect from home Wi-Fi** and **disconnect from WireGuard** (use 4G / 5G cellular data only).
 2. Open your mobile browser and navigate to:
-   * `https://docs.janus-lab.duckdns.org`
+   * `https://docs.your-domain.duckdns.org`
 3. **Expected Result**: The browser should fail to load and display:  
    `"This site can't be reached"` or `"Connection timed out"`.
    *(This proves that no one on the public internet can touch your server).*
@@ -212,7 +214,7 @@ Run these two quick tests to confirm your new security posture:
 ### Test 2: From the Inside (WireGuard VPN)
 1. On your smartphone (still on 4G / 5G), open the **WireGuard** app.
 2. Toggle the `Janus` tunnel **ON**.
-3. Refresh `https://docs.janus-lab.duckdns.org` or `https://control.janus-lab.duckdns.org`.
+3. Refresh `https://docs.your-domain.duckdns.org` or `https://control.your-domain.duckdns.org`.
 4. **Expected Result**: The page loads instantly with a **valid green SSL padlock**!
 
 ---

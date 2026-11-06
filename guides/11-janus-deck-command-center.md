@@ -2,7 +2,7 @@
 
 > **Status**: ✅ **Fully Implemented & Deployed on Project Janus**  
 > * **Project Repo**: [`P1gBagPt-Homelab/JanusDeck`](https://github.com/P1gBagPt-Homelab/JanusDeck)
-> * **Target URL**: `https://control.janus-lab.duckdns.org` (and `http://192.168.1.68:8080`)
+> * **Target URL**: `https://control.your-domain.duckdns.org` (and `http://192.168.1.68:8080`)
 > * **Platform**: Coolify PaaS (Docker Compose)
 > * **Stack**: FastAPI (Python 3.12), SQLAlchemy 2.0 (async), asyncpg + Svelte 5 (Runes, TypeScript, Tailwind CSS)
 > * **Database**: Dedicated `janusdeck` database on central shared PostgreSQL 18
@@ -66,7 +66,7 @@ sequenceDiagram
     participant DBus as Host Systemd DBus
     participant GRUB as Host GRUB Bootloader
 
-    User->>Coolify: HTTPS https://control.janus-lab.duckdns.org
+    User->>Coolify: HTTPS https://control.your-domain.duckdns.org
     Coolify->>App: Forward to Container Port 8080
     User->>App: Tap "Switch to Windows"
     App->>User: Prompt for Security PIN
@@ -123,7 +123,7 @@ When ready to deploy on Janus via Coolify:
    database:
      url: "postgresql+asyncpg://janusdeck:YOUR_PASSWORD@o4nipot4qcoaskqwss3zf6bq:5432/janusdeck"
    ```
-5. Assign domain `https://control.janus-lab.duckdns.org` in Coolify to enable automatic Let's Encrypt SSL.
+5. Assign domain `https://control.your-domain.duckdns.org` in Coolify to enable automatic Let's Encrypt SSL.
 
 ---
 

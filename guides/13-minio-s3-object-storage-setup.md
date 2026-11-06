@@ -3,8 +3,8 @@
 > **Status**: ✅ **Implemented & Verified on Project Janus**  
 > * **Platform**: Coolify PaaS (Docker Compose) or Standalone Docker CE
 > * **Service Name**: `minio-s3` (in `Infrastructure` or `Core Services` project)
-> * **S3 API Endpoint**: `https://s3.janus-lab.duckdns.org` (Port 9000)
-> * **Web Console UI**: `https://minio.janus-lab.duckdns.org` (Port 9001)
+> * **S3 API Endpoint**: `https://s3.your-domain.duckdns.org` (Port 9000)
+> * **Web Console UI**: `https://minio.your-domain.duckdns.org` (Port 9001)
 > * **Internal Docker Network**: `http://minio:9000` (zero-latency container-to-container)
 > * **Primary Storage**: `/data/storage/minio` on 1TB HDD (`SAMSUNG HD103SJ`)
 > * **Security Model**: Strict IAM Least-Privilege (1 bucket per project, dedicated user/key, 0 cross-bucket access)
@@ -22,16 +22,16 @@ Instead of paying cloud providers or fragmenting files across random container p
 1. **Multi-Project Isolation**: Every application gets its own **isolated bucket** and a **dedicated service account (Access Key + Secret Key)**. App A can never see, modify, or delete files belonging to App B.
 2. **Dual-Network Access**:
    * **Internal containers** connect directly via `http://minio:9000` without routing through your router or public internet.
-   * **External/client apps** connect securely via Traefik over HTTPS (`https://s3.janus-lab.duckdns.org`).
+   * **External/client apps** connect securely via Traefik over HTTPS (`https://s3.your-domain.duckdns.org`).
 3. **Storage Tiering**: Hosted on the 1TB cold storage HDD (`/data/storage`), keeping your ~456 GB LVM SSD pool free for operating systems, databases, and LLM weights.
 
 ```
                      ┌──────────────────────────────────────────────┐
                      │          Traefik Proxy (Wildcard SSL)        │
-                     │    *.janus-lab.duckdns.org (Ports 80/443)    │
+                     │    *.your-domain.duckdns.org (Ports 80/443)    │
                      └───────────────┬──────────────────────┬───────┘
                                      │                      │
-       https://s3.janus-lab...       │                      │  https://minio.janus-lab...
+       https://s3.your-domain...       │                      │  https://minio.your-domain...
                                      ▼                      ▼
                      ┌──────────────────────────────────────────────┐
                      │              MinIO S3 Service                │
@@ -72,7 +72,7 @@ sudo chmod -R 775 /data/storage/minio
 ## 3. Coolify Deployment Walkthrough
 
 ### Step 1: Create Resource in Coolify
-1. Open Coolify (`http://192.168.1.68:8000` or `https://coolify.janus-lab.duckdns.org`).
+1. Open Coolify (`http://192.168.1.68:8000` or `https://coolify.your-domain.duckdns.org`).
 2. Go to your **`Core Services`** or **`Infrastructure`** project.
 3. Click **+ New Resource** $\rightarrow$ **Docker Compose**.
 4. Set name to: **`minio-s3`**.
@@ -92,8 +92,8 @@ services:
       # Change these to your own strong administrative credentials!
       MINIO_ROOT_USER: "janus-admin"
       MINIO_ROOT_PASSWORD: "GenerateAStrongAdminPasswordHere_123!"
-      MINIO_SERVER_URL: "https://s3.janus-lab.duckdns.org"
-      MINIO_BROWSER_REDIRECT_URL: "https://minio.janus-lab.duckdns.org"
+      MINIO_SERVER_URL: "https://s3.your-domain.duckdns.org"
+      MINIO_BROWSER_REDIRECT_URL: "https://minio.your-domain.duckdns.org"
     volumes:
       - /data/storage/minio:/data
     ports:
@@ -101,14 +101,14 @@ services:
       - "9001:9001"   # Web Console UI
     labels:
       - "traefik.enable=true"
-      # S3 API Routing (s3.janus-lab.duckdns.org)
-      - "traefik.http.routers.minio-api.rule=Host(`s3.janus-lab.duckdns.org`)"
+      # S3 API Routing (s3.your-domain.duckdns.org)
+      - "traefik.http.routers.minio-api.rule=Host(`s3.your-domain.duckdns.org`)"
       - "traefik.http.routers.minio-api.entrypoints=https"
       - "traefik.http.routers.minio-api.tls=true"
       - "traefik.http.routers.minio-api.service=minio-api"
       - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
-      # Console Web UI Routing (minio.janus-lab.duckdns.org)
-      - "traefik.http.routers.minio-console.rule=Host(`minio.janus-lab.duckdns.org`)"
+      # Console Web UI Routing (minio.your-domain.duckdns.org)
+      - "traefik.http.routers.minio-console.rule=Host(`minio.your-domain.duckdns.org`)"
       - "traefik.http.routers.minio-console.entrypoints=https"
       - "traefik.http.routers.minio-console.tls=true"
       - "traefik.http.routers.minio-console.service=minio-console"
@@ -117,7 +117,7 @@ services:
 
 ### Step 3: Deploy & Verify
 1. Click **Deploy** in Coolify.
-2. Once healthy, open `https://minio.janus-lab.duckdns.org` (or `http://192.168.1.68:9001` on LAN).
+2. Once healthy, open `https://minio.your-domain.duckdns.org` (or `http://192.168.1.68:9001` on LAN).
 3. Log in with your `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD`.
 
 ---
@@ -127,7 +127,7 @@ services:
 To guarantee that **Project A cannot touch Project B's files**, follow this 3-step provisioning pattern for every new project:
 
 ### Step 1: Create the Project Bucket
-1. Log in to the MinIO Console (`https://minio.janus-lab.duckdns.org`).
+1. Log in to the MinIO Console (`https://minio.your-domain.duckdns.org`).
 2. Go to **Buckets** $\rightarrow$ **Create Bucket**.
 3. Name: `docmost-data` (lowercase, alphanumeric, and hyphens only).
 4. Leave Object Locking / Versioning off unless required by the project. Click **Create Bucket**.
@@ -228,7 +228,7 @@ rm /tmp/${PROJECT_NAME}-policy.json
 
 # Output credentials ready for .env
 echo "=== PROVISIONED CREDENTIALS FOR ${PROJECT_NAME} ==="
-echo "S3_ENDPOINT=http://minio:9000 (or https://s3.janus-lab.duckdns.org)"
+echo "S3_ENDPOINT=http://minio:9000 (or https://s3.your-domain.duckdns.org)"
 echo "S3_BUCKET=${BUCKET_NAME}"
 echo "S3_ACCESS_KEY=${USER_NAME}"
 echo "S3_SECRET_KEY=${USER_SECRET}"
@@ -256,7 +256,7 @@ For Docmost (deployed in Guide 07), files and wiki attachments are uploaded to M
      - AWS_S3_SECRET_ACCESS_KEY=JobDY9qfV6BSW3F6mZqYeDz8rsU5MrYF
      - AWS_S3_REGION=us-east-1
      - AWS_S3_BUCKET=docmost-data
-     - AWS_S3_ENDPOINT=https://s3.janus-lab.duckdns.org
+     - AWS_S3_ENDPOINT=https://s3.your-domain.duckdns.org
      - AWS_S3_FORCE_PATH_STYLE=true
    ```
 
@@ -270,7 +270,7 @@ Any application that supports S3 (Next.js, FastAPI, Spring Boot, Supabase, Strap
 # If app is inside Janus Docker/Coolify network:
 S3_ENDPOINT=http://minio:9000
 # If app is running outside (e.g., your laptop or cloud runner):
-# S3_ENDPOINT=https://s3.janus-lab.duckdns.org
+# S3_ENDPOINT=https://s3.your-domain.duckdns.org
 
 S3_BUCKET=docmost-data
 S3_ACCESS_KEY=docmost-user

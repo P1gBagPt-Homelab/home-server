@@ -1,7 +1,7 @@
 # Guide 08: Monitoring & Alerting (Uptime Kuma & Netdata)
 
 > **Status**: ✅ **Fully Deployed & Operational on Project Janus**  
-> * **Uptime Kuma**: Running on `louislam/uptime-kuma:2` with `TZ=Europe/Lisbon` (`status.janus-lab.duckdns.org` / `http://192.168.1.68:3001`).
+> * **Uptime Kuma**: Running on `louislam/uptime-kuma:2` with `TZ=Europe/Lisbon` (`status.your-domain.duckdns.org` / `http://192.168.1.68:3001`).
 > * **Netdata**: Running with NVIDIA GPU reservation on `http://192.168.1.68:19999` (and private over WireGuard `http://10.8.0.1:19999`).
 > * **Monitored Services**: Docmost, Coolify, PostgreSQL 18, Redis 7.2, Netdata Agent, and Gateway Ping.
 
@@ -31,17 +31,17 @@ Uptime Kuma continuously monitors your containers, databases, and websites, send
          - "3001:3001"
    ```
 5. In **Domains**, add:  
-   `https://status.janus-lab.duckdns.org` (Port: `3001`).
+   `https://status.your-domain.duckdns.org` (Port: `3001`).
 6. Click **Deploy**.
 
 ---
 
 ### Configuring Monitors in Uptime Kuma:
-Open `https://status.janus-lab.duckdns.org` (or `http://192.168.1.68:3001`) and create your admin account, then add your core monitors:
+Open `https://status.your-domain.duckdns.org` (or `http://192.168.1.68:3001`) and create your admin account, then add your core monitors:
 
 | Monitor Name | Monitor Type | Target / Hostname |
 | :--- | :--- | :--- |
-| **Docmost Wiki** | HTTP(s) | `https://docs.janus-lab.duckdns.org` (or `http://docmost:3000`) |
+| **Docmost Wiki** | HTTP(s) | `https://docs.your-domain.duckdns.org` (or `http://docmost:3000`) |
 | **Coolify Dashboard** | HTTP(s) | `http://192.168.1.68:8000` |
 | **Netdata Hardware Agent** | HTTP(s) | `http://192.168.1.68:19999` (or `http://netdata:19999`) |
 | **PostgreSQL Database** | TCP Port | Hostname: `<POSTGRES_INTERNAL_HOSTNAME>` (e.g. `o4nipot4qcoaskqwss3zf6bq`), Port: `5432` |
@@ -110,7 +110,7 @@ Netdata provides per-second live graphs of CPU temperatures, RAM usage, disk I/O
 
 > [!WARNING]
 > **Netdata Has No Built-In Password Screen!**  
-> If you attach a public domain (like `https://netdata.janus-lab.duckdns.org`) without authentication, Netdata shows:  
+> If you attach a public domain (like `https://netdata.your-domain.duckdns.org`) without authentication, Netdata shows:  
 > `⚠️ IMPORTANT: This Netdata is openly accessible from the Internet!`  
 > Anyone visiting the link could view every running process, open port, and disk metric on Janus without logging in.
 

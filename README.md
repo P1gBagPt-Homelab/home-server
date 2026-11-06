@@ -34,21 +34,22 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **03** | [OS Install & Partitions](guides/03-ubuntu-server-installation.md) | ✅ Completed | LVM ~456GB, `/boot/efi` isolated, `/data` on HDD |
 | **04** | [GPU & Docker](guides/04-post-install-gpu-and-docker.md) | ✅ Completed | Driver 595.99, CUDA 13.2, RTX 2070 container pass-through |
 | **05** | [WETEN PCIe Switch](guides/05-remote-switch-weten-setup.md) | ⏳ Hardware Pending | Awaiting WETEN PCIe card delivery; wiring prepared |
-| **06** | [WireGuard & DDNS](guides/06-wireguard-vpn-and-infrastructure.md) | ✅ Completed | `janus-lab.duckdns.org`, `wg-easy:14` on port 51821 |
+| **06** | [WireGuard & DDNS](guides/06-wireguard-vpn-and-infrastructure.md) | ✅ Completed | `your-domain.duckdns.org`, `wg-easy:14` on port 51821 |
 | **07** | [Coolify & CI/CD](guides/07-coolify-paas-setup.md) | ✅ Completed | Postgres 18, Redis 7.2, Docmost, Vaultwarden, Org Runner CI/CD |
-| **08** | [Monitoring Stack](guides/08-monitoring-and-metrics-setup.md) | ✅ Completed | Uptime Kuma v2 (`status.janus-lab`), Netdata GPU metrics |
+| **08** | [Monitoring Stack](guides/08-monitoring-and-metrics-setup.md) | ✅ Completed | Uptime Kuma v2 (`status.your-domain`), Netdata GPU metrics |
 | **09** | [System Hardening](guides/09-system-hardening-and-maintenance.md) | ✅ Completed | RTC clock sync (`timedatectl`), UFW, Fail2ban, unattended-upgrades |
 | **10** | [Automated Backups](guides/10-automated-backups-and-recovery.md) | ✅ Completed | Rclone Crypt AES-256 to 5TB Google Drive, automated snapshots |
 | **11** | [JanusDeck Portal](guides/11-janus-deck-command-center.md) | ✅ Completed | Svelte 5 + FastAPI, RTX 2070 telemetry, PIN gate, Windows switch |
-| **12** | [Local AI on Coolify](guides/12-local-ai-stack-coolify-setup.md) | ✅ Completed | Ollama + Open WebUI, RTX 2070 GPU pass-through, `ai.janus-lab` |
-| **13** | [MinIO S3 Storage](guides/13-minio-s3-object-storage-setup.md) | ✅ Completed | Multi-tenant S3 API, per-project IAM isolation, HDD cold storage (`s3.janus-lab`) |
+| **12** | [Local AI on Coolify](guides/12-local-ai-stack-coolify-setup.md) | ✅ Completed | Ollama + Open WebUI, RTX 2070 GPU pass-through, `ai.your-domain` |
+| **13** | [MinIO S3 Storage](guides/13-minio-s3-object-storage-setup.md) | ✅ Completed | Multi-tenant S3 API, per-project IAM isolation, HDD cold storage (`s3.your-domain`) |
 | **14** | [New Project Playbook](guides/14-new-project-playbook.md) | ✅ Completed | End-to-end blueprint: shared Postgres, S3, GPU AI, CI/CD, Traefik SSL & monitoring |
-| **15** | [RabbitMQ Message Broker](guides/15-rabbitmq-message-broker-setup.md) | ✅ Completed | Centralized AMQP broker, vhost isolation, Management UI (`queue.janus-lab`) & Prometheus |
-| **16** | [Observability Stack](guides/16-observability-grafana-prometheus-cadvisor.md) | ✅ Completed | Grafana (`grafana.janus-lab`), Prometheus, cAdvisor & Loki for per-container CPU/RAM & logs |
-| **17** | [Jellyfin Streaming](guides/17-jellyfin-media-streaming.md) | ✅ Completed | Jellyfin PaaS on Coolify, Traefik SSL (`stream.janus-lab`), RTX 2070 NVENC, Xiaomi TV ready |
-| **18** | [GlitchTip Error Tracking](guides/18-application-error-tracking-glitchtip.md) | 🚀 Ready to Deploy | Lightweight Sentry alternative (`errors.janus-lab`), full stack traces & crash alerts |
-| **19** | [Network Hardening (Zero Exposure)](guides/19-network-hardening-dns01-and-private-access.md) | 🛡️ Active Hardening | Closed Ports 80 & 443, DuckDNS DNS-01 SSL challenges, 100% WireGuard-only privacy |
-| **20** | [Janus Unified CLI](guides/20-janus-unified-cli.md) | ⚡ Ready to Use | Terminal dashboard (`janus status`), 1-click Windows switch, manual backup & log tailing |
+| **15** | [RabbitMQ Message Broker](guides/15-rabbitmq-message-broker-setup.md) | ✅ Completed | Centralized AMQP broker, vhost isolation, Management UI (`queue.your-domain`) & Prometheus |
+| **16** | [Observability Stack](guides/16-observability-grafana-prometheus-cadvisor.md) | ✅ Completed | Grafana (`grafana.your-domain`), Prometheus, cAdvisor & Loki for per-container CPU/RAM & logs |
+| **17** | [Jellyfin Streaming](guides/17-jellyfin-media-streaming.md) | ✅ Completed | Jellyfin PaaS on Coolify, Traefik SSL (`stream.your-domain`), RTX 2070 NVENC, Xiaomi TV ready |
+| **18** | [GlitchTip Error Tracking](guides/18-application-error-tracking-glitchtip.md) | ✅ Completed | Lightweight Sentry alternative (`errors.your-domain`), full stack traces & crash alerts |
+| **19** | [Network Hardening (Zero Exposure)](guides/19-network-hardening-dns01-and-private-access.md) | ✅ Completed | Closed Ports 80 & 443, DuckDNS DNS-01 SSL challenges, 100% WireGuard-only privacy |
+| **20** | [Janus Unified CLI](guides/20-janus-unified-cli.md) | ✅ Completed | Terminal dashboard (`janus status`), 1-click Windows switch, manual backup & log tailing |
+| **21** | [GRUB Boot Management](guides/21-grub-boot-management-and-troubleshooting.md) | ✅ Completed | Enforced unattended auto-boot to Ubuntu, GRUB env variable cleanup & dual-boot runbook |
 
 ---
 
@@ -92,7 +93,7 @@ A documentation repository and operational guide for running a dual-purpose pers
    * 1-click provisioning of shared PostgreSQL 18 and Redis 7 databases.
    * PostgreSQL administration: provisioning dedicated users, databases, and permissions for future apps.
    * Docmost collaborative wiki deployment linked to shared databases.
-   * Vaultwarden Bitwarden password manager deployment at `https://vault.janus-lab.duckdns.org`.
+   * Vaultwarden Bitwarden password manager deployment at `https://vault.your-domain.duckdns.org`.
    * Integrated Traefik reverse proxy and automated Let's Encrypt wildcard SSL.
 
 8. [**Guide 08: Monitoring & Alerting (Uptime Kuma & Netdata)**](guides/08-monitoring-and-metrics-setup.md)
@@ -113,7 +114,7 @@ A documentation repository and operational guide for running a dual-purpose pers
     * 60-day cloud retention and 5-minute disaster recovery protocol.
 
 11. [**Guide 11: JanusDeck Command Center & Remote Management Portal**](guides/11-janus-deck-command-center.md)
-    * Standalone open-source web dashboard built with Svelte 5 + FastAPI deployed via Coolify (`control.janus-lab.duckdns.org`).
+    * Standalone open-source web dashboard built with Svelte 5 + FastAPI deployed via Coolify (`control.your-domain.duckdns.org`).
     * Mandatory master PIN security gate with clipboard paste & password manager autofill.
     * Real-time hardware telemetry streaming: Intel i7-8700K CPU, 40GB RAM, NVMe/HDD storage, and RTX 2070 GPU via SSE.
     * PIN-guarded physical host actions: graceful shutdown, reboot, 5-second abort countdown, and one-click remote switch to Windows gaming mode (`grub-reboot`).
@@ -122,12 +123,12 @@ A documentation repository and operational guide for running a dual-purpose pers
 12. [**Guide 12: Local AI Stack Deployment on Coolify (Ollama + Open WebUI)**](guides/12-local-ai-stack-coolify-setup.md)
     * Deploying Ollama and Open WebUI as a Docker Compose stack inside Coolify.
     * Passing through the ASUS ROG Strix RTX 2070 GPU using the NVIDIA Container Toolkit.
-    * Routing external access to `https://ai.janus-lab.duckdns.org` with automatic Let's Encrypt SSL via Traefik.
+    * Routing external access to `https://ai.your-domain.duckdns.org` with automatic Let's Encrypt SSL via Traefik.
     * 100% SSD storage configuration (`/data/ai/ollama` and `/data/ai/open-webui`) for instantaneous model cold-starts.
     * Exposing port 11434 for local developer tooling (VS Code Continue.dev coding copilot).
 
 13. [**Guide 13: Self-Hosted S3 Object Storage with MinIO & Project Isolation**](guides/13-minio-s3-object-storage-setup.md)
-    * Centralized S3-compatible storage cluster deployed on Coolify with Traefik SSL (`s3.janus-lab.duckdns.org` & `minio.janus-lab.duckdns.org`).
+    * Centralized S3-compatible storage cluster deployed on Coolify with Traefik SSL (`s3.your-domain.duckdns.org` & `minio.your-domain.duckdns.org`).
     * Strict project isolation: dedicated per-project buckets and scoped IAM policies/keys with zero cross-bucket read/write access.
     * High-capacity storage mapping to the 1TB cold storage HDD (`/data/storage/minio`).
     * Ready-to-use connection examples for Node.js (`@aws-sdk/client-s3`), Python (`boto3`), and Docker `.env`.
@@ -141,13 +142,13 @@ A documentation repository and operational guide for running a dual-purpose pers
     * Automated CI/CD on push via GitHub Actions runner, Traefik wildcard SSL, and Uptime Kuma alerts.
 
 15. [**Guide 15: Centralized Message Broker with RabbitMQ**](guides/15-rabbitmq-message-broker-setup.md)
-    * Central AMQP message broker deployment on Coolify (`https://queue.janus-lab.duckdns.org`).
+    * Central AMQP message broker deployment on Coolify (`https://queue.your-domain.duckdns.org`).
     * Virtual Host (`vhost`) and user isolation for multi-tenant microservices.
     * Producer/Consumer examples for Python (`pika`) and Node.js (`amqplib`).
     * Native Prometheus metrics exporter integration on port 15692.
 
 16. [**Guide 16: Centralized Observability Stack (Grafana, Prometheus, cAdvisor & Loki)**](guides/16-observability-grafana-prometheus-cadvisor.md)
-    * Unified observability dashboard at `https://grafana.janus-lab.duckdns.org`.
+    * Unified observability dashboard at `https://grafana.your-domain.duckdns.org`.
     * Prometheus time-series scraping for cAdvisor, RabbitMQ, and mini-project `/metrics`.
     * Google cAdvisor per-container CPU & RAM profiling.
     * Grafana Loki & Promtail for timestamp-aligned container log queries and error correlation.
@@ -159,7 +160,7 @@ A documentation repository and operational guide for running a dual-purpose pers
     * Xiaomi Google TV setup with official Android TV app and LAN auto-discovery.
 
 18. [**Guide 18: Application Error & Crash Tracking with GlitchTip (Sentry)**](guides/18-application-error-tracking-glitchtip.md)
-    * Lightweight open-source Sentry alternative deployed on Coolify (https://errors.janus-lab.duckdns.org).
+    * Lightweight open-source Sentry alternative deployed on Coolify (https://errors.your-domain.duckdns.org).
     * Captures runtime crashes, in-memory variable dumps, and line-by-line call stacks across Python, Node.js, and .NET.
     * Uses shared PostgreSQL 18 and Redis 7.2 (<250 MB RAM vs 16GB for official Sentry).
     * Discord/Telegram alert integration for immediate critical incident notifications.
@@ -174,6 +175,18 @@ A documentation repository and operational guide for running a dual-purpose pers
     * Single command interface (`/usr/local/bin/janus`) wrapping Docker, UFW, NVIDIA telemetry, and GRUB.
     * Real-time hardware telemetry dashboard (`janus status`) with colored usage bars for CPU, 40GB RAM, NVMe/HDD storage, and RTX 2070 GPU VRAM.
     * Safe dual-boot switch (`janus to-windows`), manual backup triggers (`janus backup`), and fuzzy container log tailing (`janus logs <service>`).
+
+21. [**Guide 21: GRUB Boot Management & Remote Dual-Boot Runbook**](guides/21-grub-boot-management-and-troubleshooting.md)
+    * Permanent enforcement of headless auto-boot into Ubuntu Server on remote power-on.
+    * Preventing sticky Windows boot selection caused by `GRUB_SAVEDEFAULT` or cached `grubenv` flags.
+    * Troubleshooting matrix for UEFI boot priority, `os-prober`, and one-shot `grub-reboot` workflows.
+
+22. [**Guide 22: API Standards, Git-Native Testing (Bruno) & Zero-Cost Docs (Scalar)**](guides/22-api-standards-documentation-and-testing.md)
+    * 100% Free and Open-Source API quality framework with zero cloud lock-in ($0/month).
+    * Embedded interactive Scalar documentation at `GET /docs` (0MB extra container footprint).
+    * Git-committed API collections and smoke tests with Bruno (`.bru` files in repo).
+    * CI quality gates running `@usebruno/cli` on Janus self-hosted runner before Coolify deployments.
+    * Enforced 5 Golden Endpoints (`/healthz`, `/readyz`, `/version`, `/openapi.json`, `/docs`) and RFC 7807 error format with GlitchTip correlation.
 
 ---
 
@@ -263,3 +276,9 @@ sequenceDiagram
     Card->>Linux: Triggers ACPI Graceful Shutdown
     Linux->>Linux: Safe disk flush & poweroff (enters 1-2W standby)
 ```
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE) - feel free to adapt these guides, architecture patterns, and automation scripts for your own homelab setup.

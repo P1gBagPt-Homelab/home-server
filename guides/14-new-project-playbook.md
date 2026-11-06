@@ -3,7 +3,7 @@
 > **Status**: ✅ **Standard Operational Playbook for Project Janus**  
 > * **Purpose**: End-to-end developer guide and checklist for bootstrapping, developing, deploying, and integrating new mini-projects into the Janus homelab ecosystem.  
 > * **Platform**: Coolify PaaS (`http://192.168.1.68:8000` / `http://10.8.0.1:8000`)  
-> * **Reverse Proxy & SSL**: Traefik with automated Let's Encrypt Wildcard SSL (`*.janus-lab.duckdns.org`)  
+> * **Reverse Proxy & SSL**: Traefik with automated Let's Encrypt Wildcard SSL (`*.your-domain.duckdns.org`)  
 > * **Shared Resources**: Multi-Tenant PostgreSQL 18, Redis 7.2, MinIO S3 Object Storage, and Local Ollama AI (RTX 2070 8GB VRAM).  
 > * **Automated CI/CD**: 24/7 Self-Hosted GitHub Actions Runner under `P1gBagPt-Homelab`.
 
@@ -37,7 +37,7 @@ Janus already provides a unified production-grade platform:
 ┌─────────────────────────┐          ┌─────────────────────────┐          ┌─────────────────────────┐
 │     Public Routing      │          │  Shared Infrastructure  │          │   Persistent Storage    │
 │ • Traefik Reverse Proxy │          │ • PostgreSQL 18 DB      │          │ • /data/volumes/ (SSD)  │
-│ • *.janus-lab.duckdns   │          │ • Redis 7.2 Cache       │          │ • /data/storage/ (HDD)  │
+│ • *.your-domain.duckdns   │          │ • Redis 7.2 Cache       │          │ • /data/storage/ (HDD)  │
 │ • Let's Encrypt SSL 443 │          │ • MinIO S3 (Port 9000)  │          │ • Nightly Rclone Backup │
 │ • Uptime Kuma Alerts    │          │ • Ollama AI (RTX 2070)  │          │   to 5TB Google Drive   │
 └─────────────────────────┘          └─────────────────────────┘          └─────────────────────────┘
@@ -45,7 +45,7 @@ Janus already provides a unified production-grade platform:
 
 ---
 
-## 2. The 10-Step Mini-Project Checklist
+## 2. The 12-Step Mini-Project Checklist
 
 Follow this linear checklist whenever you kick off a new application:
 
@@ -57,9 +57,11 @@ Follow this linear checklist whenever you kick off a new application:
 [ ] 5. (Optional) Hook into Local AI via Ollama API
 [ ] 6. Allocate correct storage path (/data/volumes vs /data/storage)
 [ ] 7. Define Dockerfile or docker-compose.yml on 'coolify' network
-[ ] 8. Register Application in Coolify & assign domain
-[ ] 9. Add GitHub Secrets & deploy.yml for automated push deployments
-[ ] 10. Register health monitor in Uptime Kuma & JanusDeck Portal
+[ ] 8. Implement 5 Golden Endpoints (/healthz, /readyz, /version) & Scalar (/docs)
+[ ] 9. Create Bruno API test suite in repo under `bruno/`
+[ ] 10. Register Application in Coolify & assign domain
+[ ] 11. Add GitHub Secrets & deploy.yml with automated Bruno CLI tests
+[ ] 12. Register health monitor in Uptime Kuma (/readyz) & JanusDeck Portal
 ```
 
 ---
@@ -182,7 +184,7 @@ rm /tmp/${PROJECT_NAME}-policy.json
 # 5. Output ready-to-copy credentials
 echo ""
 echo "=== PROVISIONED S3 CREDENTIALS FOR ${PROJECT_NAME} ==="
-echo "S3_ENDPOINT=https://s3.janus-lab.duckdns.org (or http://minio:9000)"
+echo "S3_ENDPOINT=https://s3.your-domain.duckdns.org (or http://minio:9000)"
 echo "S3_BUCKET=${BUCKET_NAME}"
 echo "S3_ACCESS_KEY=${USER_NAME}"
 echo "S3_SECRET_KEY=${USER_SECRET}"
@@ -201,7 +203,7 @@ In your application `.env` or Coolify compose:
 # If app is running inside the Coolify Docker network:
 S3_ENDPOINT=http://minio:9000
 # If app is external, or generates URLs rendered directly by browsers:
-# S3_ENDPOINT=https://s3.janus-lab.duckdns.org
+# S3_ENDPOINT=https://s3.your-domain.duckdns.org
 
 S3_BUCKET=smart-receipts-data
 S3_ACCESS_KEY=smart-receipts-user
@@ -219,7 +221,7 @@ S3_FORCE_PATH_STYLE=true
 
 If your project needs text generation, embeddings, data extraction, or code analysis:
 * **Ollama Endpoint**: `http://ollama:11434` *(on internal `coolify` Docker network)*.
-* **Open WebUI**: `https://ai.janus-lab.duckdns.org` (for manual prompting and model downloads).
+* **Open WebUI**: `https://ai.your-domain.duckdns.org` (for manual prompting and model downloads).
 * **Available Models**: `llama3.1:8b`, `mistral:7b`, `nomic-embed-text`.
 * **Zero Cost**: No OpenAI API credits needed; runs locally with 8GB VRAM CUDA acceleration on your RTX 2070.
 
@@ -278,7 +280,7 @@ services:
       - REDIS_URL=redis://:PASSWORD@<redis-container-id>:6379/1
       # Central S3 Storage
       - S3_ENDPOINT=http://minio:9000
-      - S3_PUBLIC_URL=https://s3.janus-lab.duckdns.org
+      - S3_PUBLIC_URL=https://s3.your-domain.duckdns.org
       - S3_BUCKET=my-app-bucket
       - S3_ACCESS_KEY=my-access-key
       - S3_SECRET_KEY=my-secret-key
@@ -297,32 +299,66 @@ networks:
 
 ---
 
-### Step 8: Coolify PaaS Registration & Domain Routing
+### Step 8: Standardized Endpoints & Scalar Documentation
+
+Every backend application on Janus must implement standardized operational endpoints and self-contained documentation (see **[Guide 22](22-api-standards-documentation-and-testing.md)** for full details):
+
+1. **Expose the 5 Golden Endpoints**:
+   * `GET /healthz`: Process liveness check (`{"status": "alive"}`).
+   * `GET /readyz`: Dependency readiness checking active connections to PostgreSQL, Redis, and MinIO.
+   * `GET /version`: Current semantic version, git commit SHA, and environment.
+   * `GET /openapi.json`: Machine-readable OpenAPI 3.1 specification.
+   * `GET /docs`: Modern, zero-overhead interactive **Scalar** API documentation embedded directly in the app.
+
+2. **Error Standards & GlitchTip Integration**:
+   * Standardize error responses using RFC 7807 Problem Details (`type`, `title`, `status`, `detail`, `instance`, `trace_id`).
+   * Pass incoming or generated `X-Request-ID` headers to **GlitchTip** ([Guide 18](18-application-error-tracking-glitchtip.md)) so production errors map directly to stack traces.
+
+---
+
+### Step 9: Git-Native API Test Suite (Bruno)
+
+Never let APIs break in silence. Commit functional tests directly into your repository using **Bruno** (100% Free & Open-Source):
+
+1. Initialize a `bruno/` directory in your repo:
+   ```bash
+   mkdir -p bruno/environments
+   ```
+2. Define `bruno/environments/Local.bru` (`baseUrl: http://localhost:8000`) and `Janus-Prod.bru`.
+3. Add smoke tests for `/healthz`, `/readyz`, and primary CRUD routes with assertions.
+4. Verify locally using the free Bruno Desktop GUI or CLI:
+   ```bash
+   bru run bruno --env Local
+   ```
+
+---
+
+### Step 10: Coolify PaaS Registration & Domain Routing
 
 1. Open Coolify: `http://192.168.1.68:8000` (or `http://10.8.0.1:8000` via WireGuard).
 2. Go to your **Projects** $\rightarrow$ select your project (e.g. `Applications` or `Mini-Projects`).
 3. Click **+ New Resource** $\rightarrow$ **Application** $\rightarrow$ **GitHub App** (`daniel-github`).
 4. Select your repo: `P1gBagPt-Homelab/<repo-name>` and branch `main`.
 5. Under **Domains**:
-   * Add: `https://<app_name>.janus-lab.duckdns.org`
+   * Add: `https://<app_name>.your-domain.duckdns.org`
    * Internal Port: Match your container port (e.g. `3000` or `8000`).
-   * Traefik will automatically issue a Let's Encrypt SSL certificate!
+   * Traefik will automatically issue a Let's Encrypt SSL certificate via DuckDNS DNS-01!
 6. Note the application's unique **UUID** from the browser URL (e.g. `rvi8hu1owmes3shdpsiuyz3q`).
 
 ---
 
-### Step 9: Automated CI/CD (GitHub Actions)
+### Step 11: Automated CI/CD with Bruno Quality Gates (GitHub Actions)
 
-Add continuous deployment so pushing to `main` instantly updates the running container on your server:
+Add continuous deployment so pushing to `main` executes Bruno tests and linters on the Janus self-hosted runner before triggering a Coolify update:
 
 1. **Add Repository Secrets** in GitHub (`Settings > Secrets and variables > Actions`):
    * `COOLIFY_HOST`: `http://192.168.1.68:8000`
-   * `COOLIFY_UUID`: `<app-uuid-from-step-8>`
+   * `COOLIFY_UUID`: `<app-uuid-from-step-10>`
    * `COOLIFY_TOKEN`: `<your-coolify-api-token>`
 
 2. **Add `.github/workflows/deploy.yml`**:
    ```yaml
-   name: Deploy to Project Janus
+   name: Quality Gates and Deploy to Janus
 
    on:
      push:
@@ -331,8 +367,32 @@ Add continuous deployment so pushing to `main` instantly updates the running con
      workflow_dispatch:
 
    jobs:
+     test:
+       name: Lint & Bruno Smoke Tests
+       runs-on: self-hosted  # 100% free runner on Janus
+       timeout-minutes: 5    # Never block runner if network or container hangs
+       steps:
+         - name: Checkout Code
+           uses: actions/checkout@v4
+
+         - name: Install Bruno CLI
+           run: npm install -g @usebruno/cli
+
+         - name: Start Ephemeral App Container
+           run: |
+             docker compose up -d --build
+             timeout 30 sh -c 'until curl -sf http://localhost:8000/healthz; do sleep 1; done'
+
+         - name: Run Bruno Test Suite
+           run: bru run bruno --env Local --bail
+
+         - name: Tear Down Test Container
+           if: always()
+           run: docker compose down -v
+
      deploy:
        name: Trigger Coolify Redeploy
+       needs: test
        runs-on: self-hosted
        steps:
          - name: Trigger Coolify Deployment
@@ -341,7 +401,7 @@ Add continuous deployment so pushing to `main` instantly updates the running con
              COOLIFY_UUID: ${{ secrets.COOLIFY_UUID }}
              COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
            run: |
-             echo "🚀 Triggering deployment on Janus..."
+             echo "🚀 Quality gates passed. Triggering deployment on Janus..."
              RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
                -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
                -H "Content-Type: application/json" \
@@ -358,20 +418,20 @@ Add continuous deployment so pushing to `main` instantly updates the running con
 
 ---
 
-### Step 10: Observability, Alerts & Portal Listing
+### Step 12: Observability, Alerts & Portal Listing
 
 Complete the operational lifecycle so you always know your app is healthy:
 
 1. **Uptime Kuma Health Check**:
-   * Visit `https://status.janus-lab.duckdns.org`.
+   * Visit `https://status.your-domain.duckdns.org`.
    * Click **+ Add New Monitor**.
-   * Type: `HTTP(s)` $\rightarrow$ URL: `https://<app_name>.janus-lab.duckdns.org/health` (or `/`).
+   * Type: `HTTP(s)` $\rightarrow$ URL: `https://<app_name>.your-domain.duckdns.org/readyz`.
    * Heartbeat: `60 seconds`.
-   * *Outcome:* You get immediate Discord/Telegram alerts if the app crashes or throws 500 errors.
+   * *Outcome:* Proactively monitors dependencies (DB, Redis, S3). You get immediate Discord/Telegram alerts if the app or any dependency degrades.
 
 2. **JanusDeck Listing**:
-   * Visit `https://control.janus-lab.duckdns.org`.
-   * Click **+ Add Service** $\rightarrow$ Name: `<App Name>`, URL: `https://<app_name>.janus-lab.duckdns.org`, Category: `Mini-Projects`.
+   * Visit `https://control.your-domain.duckdns.org`.
+   * Click **+ Add Service** $\rightarrow$ Name: `<App Name>`, URL: `https://<app_name>.your-domain.duckdns.org`, Category: `Mini-Projects`.
    * *Outcome:* App appears in your central launcher with real-time green/red availability indicators.
 
 3. **Automated Nightly Backups**:
@@ -388,12 +448,12 @@ Complete the operational lifecycle so you always know your app is healthy:
 | **Coolify PaaS** | Host LAN | `http://192.168.1.68:8000` / `http://10.8.0.1:8000` | `8000` |
 | **Shared PostgreSQL 18** | `o4nipot4qcoaskqwss3zf6bq` | *Internal only via Docker/WireGuard* | `5432` |
 | **Shared Redis 7.2** | `<redis-container-id>` | *Internal only via Docker/WireGuard* | `6379` |
-| **MinIO S3 API** | `minio` | `https://s3.janus-lab.duckdns.org` | `9000` |
-| **MinIO Console** | `minio` | `https://minio.janus-lab.duckdns.org` | `9001` |
-| **Ollama AI (RTX 2070)** | `ollama` | `https://ai.janus-lab.duckdns.org` | `11434` |
-| **Uptime Kuma** | `uptime-kuma` | `https://status.janus-lab.duckdns.org` | `3001` |
-| **JanusDeck** | `janusdeck` | `https://control.janus-lab.duckdns.org` | `8080` |
-| **Vaultwarden** | `vaultwarden` | `https://vault.janus-lab.duckdns.org` | `80` |
+| **MinIO S3 API** | `minio` | `https://s3.your-domain.duckdns.org` | `9000` |
+| **MinIO Console** | `minio` | `https://minio.your-domain.duckdns.org` | `9001` |
+| **Ollama AI (RTX 2070)** | `ollama` | `https://ai.your-domain.duckdns.org` | `11434` |
+| **Uptime Kuma** | `uptime-kuma` | `https://status.your-domain.duckdns.org` | `3001` |
+| **JanusDeck** | `janusdeck` | `https://control.your-domain.duckdns.org` | `8080` |
+| **Vaultwarden** | `vaultwarden` | `https://vault.your-domain.duckdns.org` | `80` |
 
 ### Handy CLI Commands:
 ```bash
