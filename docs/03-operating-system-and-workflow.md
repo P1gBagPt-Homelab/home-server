@@ -52,12 +52,20 @@ When you toggle the smart plug ON from outside your home, there is no one at the
    # Enable one-shot reboot memory
    GRUB_SAVEDEFAULT=false
    ```
-3. Update GRUB:
+3. Clear any sticky boot environment variables:
+   ```bash
+   sudo grub-set-default 0
+   sudo grub-editenv /boot/grub/grubenv unset next_entry
+   sudo grub-editenv /boot/grub/grubenv unset saved_entry
+   ```
+4. Update GRUB:
    ```bash
    sudo update-grub
    ```
 
-*Result:* Every time the smart outlet powers on the PC, it waits 3 seconds and automatically boots into the Linux Server.
+*Result:* Every time the smart outlet or WETEN card powers on the PC, it waits 3 seconds and automatically boots into the Linux Server.
+
+> For in-depth troubleshooting and recovery runbooks, see [**Guide 21: GRUB Boot Management & Remote Dual-Boot Runbook**](../guides/21-grub-boot-management-and-troubleshooting.md).
 
 ---
 

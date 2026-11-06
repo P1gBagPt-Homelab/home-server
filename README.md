@@ -49,6 +49,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **18** | [GlitchTip Error Tracking](guides/18-application-error-tracking-glitchtip.md) | ✅ Completed | Lightweight Sentry alternative (`errors.janus-lab`), full stack traces & crash alerts |
 | **19** | [Network Hardening (Zero Exposure)](guides/19-network-hardening-dns01-and-private-access.md) | ✅ Completed | Closed Ports 80 & 443, DuckDNS DNS-01 SSL challenges, 100% WireGuard-only privacy |
 | **20** | [Janus Unified CLI](guides/20-janus-unified-cli.md) | ✅ Completed | Terminal dashboard (`janus status`), 1-click Windows switch, manual backup & log tailing |
+| **21** | [GRUB Boot Management](guides/21-grub-boot-management-and-troubleshooting.md) | ✅ Completed | Enforced unattended auto-boot to Ubuntu, GRUB env variable cleanup & dual-boot runbook |
 
 ---
 
@@ -174,6 +175,11 @@ A documentation repository and operational guide for running a dual-purpose pers
     * Single command interface (`/usr/local/bin/janus`) wrapping Docker, UFW, NVIDIA telemetry, and GRUB.
     * Real-time hardware telemetry dashboard (`janus status`) with colored usage bars for CPU, 40GB RAM, NVMe/HDD storage, and RTX 2070 GPU VRAM.
     * Safe dual-boot switch (`janus to-windows`), manual backup triggers (`janus backup`), and fuzzy container log tailing (`janus logs <service>`).
+
+21. [**Guide 21: GRUB Boot Management & Remote Dual-Boot Runbook**](guides/21-grub-boot-management-and-troubleshooting.md)
+    * Permanent enforcement of headless auto-boot into Ubuntu Server on remote power-on.
+    * Preventing sticky Windows boot selection caused by `GRUB_SAVEDEFAULT` or cached `grubenv` flags.
+    * Troubleshooting matrix for UEFI boot priority, `os-prober`, and one-shot `grub-reboot` workflows.
 
 ---
 
