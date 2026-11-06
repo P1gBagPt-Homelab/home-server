@@ -46,8 +46,8 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **15** | [RabbitMQ Message Broker](guides/15-rabbitmq-message-broker-setup.md) | ✅ Completed | Centralized AMQP broker, vhost isolation, Management UI (`queue.janus-lab`) & Prometheus |
 | **16** | [Observability Stack](guides/16-observability-grafana-prometheus-cadvisor.md) | ✅ Completed | Grafana (`grafana.janus-lab`), Prometheus, cAdvisor & Loki for per-container CPU/RAM & logs |
 | **17** | [Jellyfin Streaming](guides/17-jellyfin-media-streaming.md) | ✅ Completed | Jellyfin PaaS on Coolify, Traefik SSL (`stream.janus-lab`), RTX 2070 NVENC, Xiaomi TV ready |
-| **18** | [GlitchTip Error Tracking](guides/18-application-error-tracking-glitchtip.md) | 🚀 Ready to Deploy | Lightweight Sentry alternative (`errors.janus-lab`), full stack traces & crash alerts |
-| **19** | [Network Hardening (Zero Exposure)](guides/19-network-hardening-dns01-and-private-access.md) | 🛡️ Active Hardening | Closed Ports 80 & 443, DuckDNS DNS-01 SSL challenges, 100% WireGuard-only privacy |
+| **18** | [GlitchTip Error Tracking](guides/18-application-error-tracking-glitchtip.md) | ✅ Completed | Lightweight Sentry alternative (`errors.janus-lab`), full stack traces & crash alerts |
+| **19** | [Network Hardening (Zero Exposure)](guides/19-network-hardening-dns01-and-private-access.md) | ✅ Completed | Closed Ports 80 & 443, DuckDNS DNS-01 SSL challenges, 100% WireGuard-only privacy |
 | **20** | [Janus Unified CLI](guides/20-janus-unified-cli.md) | ✅ Completed | Terminal dashboard (`janus status`), 1-click Windows switch, manual backup & log tailing |
 
 ---

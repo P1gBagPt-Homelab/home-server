@@ -1,6 +1,6 @@
 # Guide 18: Application Error & Crash Tracking with GlitchTip (Sentry)
 
-> **Status**: 🚀 **Ready to Deploy on Project Janus**  
+> **Status**: ✅ **Verified & Deployed on Project Janus**  
 > * **Platform**: Coolify PaaS (Docker Compose)  
 > * **Service Name**: `glitchtip` (in `Infrastructure` or `Core Services` project)  
 > * **Web UI**: `https://errors.janus-lab.duckdns.org` (Internal Port 8000)  
