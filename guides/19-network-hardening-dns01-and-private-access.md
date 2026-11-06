@@ -111,14 +111,16 @@ Coolify manages Traefik via Docker Compose at `/data/coolify/proxy`. We will con
      ```
    Save and exit (`Ctrl+O`, `Enter`, `Ctrl+X`).
 
-5. Restart the Coolify proxy container to apply the changes:
+5. Recreate the Coolify proxy container with Docker Compose to apply the changes:
    ```bash
-   docker restart coolify-proxy
+   cd /data/coolify/proxy
+   docker compose up -d --force-recreate
    ```
+   *(Note: `docker restart coolify-proxy` will NOT reload changes from `docker-compose.yml`; you must use `docker compose up -d`).*
 
 6. Monitor the Traefik proxy startup logs to ensure there are no syntax errors:
    ```bash
-   docker logs -f coolify-proxy
+   docker logs --tail 50 -f coolify-proxy
    ```
    *(Look for lines confirming ACME DNS challenge initialization. Press `Ctrl+C` to exit logs).*
 
