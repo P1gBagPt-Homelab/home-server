@@ -1,9 +1,9 @@
 # Guide 12: Local AI Stack Deployment on Coolify (Ollama + Open WebUI)
 
-> **Status**: ⏳ **Ready to Deploy on Project Janus**  
+> **Status**: ✅ **Fully Deployed & Operational on Project Janus**  
 > * **Platform**: Coolify PaaS (Docker Compose)
 > * **Service Name**: `ai-stack` (in `Infrastructure` or `Core Services` project)
-> * **Target URL**: `https://ai.janus-lab.duckdns.org` (and `http://192.168.1.68:3000`)
+> * **Target URL**: `https://ai.janus-lab.duckdns.org` (and `http://192.168.1.68:3080`)
 > * **Backend Endpoint**: `http://192.168.1.68:11434` (Ollama OpenAI-compatible API)
 > * **Acceleration**: NVIDIA RTX 2070 (8GB VRAM) via NVIDIA Container Toolkit
 > * **Storage**: 100% on dedicated server SSD (`/data/ai/ollama` & `/data/ai/open-webui`)
@@ -94,7 +94,7 @@ services:
     container_name: open-webui
     restart: unless-stopped
     ports:
-      - "3000:8080"
+      - "3080:8080"
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
       - WEBUI_SECRET_KEY=janus-ai-super-secret-key-replace-me
@@ -107,6 +107,9 @@ services:
 > [!TIP]
 > **Why Port 11434 is exposed to the host**:  
 > Exposing `11434:11434` lets developer tools on your local machines (such as the **Continue.dev** coding assistant in VS Code) talk directly to Ollama across your LAN or over WireGuard VPN.
+
+> [!NOTE]
+> **Port Allocation**: Host port `3080` is mapped to container port `8080` (`3080:8080`) to avoid port collisions with services using port `3000` (e.g., Docmost Wiki). If you solely access Open WebUI through the Traefik domain (`https://ai.janus-lab.duckdns.org`), the `ports:` mapping can also be safely omitted entirely.
 
 ### Step 3: Configure Domains & SSL in Coolify
 1. In the service list for `ai-stack`, click on **`open-webui`**.
@@ -155,7 +158,7 @@ docker exec -it ollama ollama pull nomic-embed-text
 
 ## 5. First-Time Open WebUI Configuration
 
-1. Visit **`https://ai.janus-lab.duckdns.org`** (or `http://192.168.1.68:3000`).
+1. Visit **`https://ai.janus-lab.duckdns.org`** (or `http://192.168.1.68:3080`).
 2. **Create Admin Account**: The very first user account created automatically becomes the system **Admin**.
 3. **Restrict Sign-ups (Crucial for Public Subdomains)**:
    * Click your profile picture (bottom-left) > **Admin Panel** > **Settings** > **General**.

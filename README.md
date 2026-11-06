@@ -40,7 +40,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **09** | [System Hardening](guides/09-system-hardening-and-maintenance.md) | ✅ Completed | RTC clock sync (`timedatectl`), UFW, Fail2ban, unattended-upgrades |
 | **10** | [Automated Backups](guides/10-automated-backups-and-recovery.md) | ✅ Completed | Rclone Crypt AES-256 to 5TB Google Drive, automated snapshots |
 | **11** | [JanusDeck Portal](guides/11-janus-deck-command-center.md) | ✅ Completed | Svelte 5 + FastAPI, RTX 2070 telemetry, PIN gate, Windows switch |
-| **12** | [Local AI on Coolify](guides/12-local-ai-stack-coolify-setup.md) | ⏳ Ready to Deploy | Ollama + Open WebUI, RTX 2070 GPU pass-through, `ai.janus-lab` |
+| **12** | [Local AI on Coolify](guides/12-local-ai-stack-coolify-setup.md) | ✅ Completed | Ollama + Open WebUI, RTX 2070 GPU pass-through, `ai.janus-lab` |
 | **13** | [MinIO S3 Storage](guides/13-minio-s3-object-storage-setup.md) | ✅ Completed | Multi-tenant S3 API, per-project IAM isolation, HDD cold storage (`s3.janus-lab`) |
 | **14** | [New Project Playbook](guides/14-new-project-playbook.md) | ✅ Completed | End-to-end blueprint: shared Postgres, S3, GPU AI, CI/CD, Traefik SSL & monitoring |
 | **15** | [RabbitMQ Message Broker](guides/15-rabbitmq-message-broker-setup.md) | ✅ Completed | Centralized AMQP broker, vhost isolation, Management UI (`queue.janus-lab`) & Prometheus |

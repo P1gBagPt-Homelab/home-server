@@ -179,7 +179,7 @@ services:
     container_name: open-webui
     restart: unless-stopped
     ports:
-      - "3000:8080"
+      - "3080:8080"
     volumes:
       - /data/ai/open-webui:/app/backend/data
     environment:
@@ -190,7 +190,7 @@ services:
 ```
 
 * **Coolify Traefik Domain**: `https://ai.janus-lab.duckdns.org` with container port `8080`.
-* **Direct LAN / WireGuard URL**: `http://192.168.1.68:3000` or `http://10.8.0.1:3000`.
+* **Direct LAN / WireGuard URL**: `http://192.168.1.68:3080` or `http://10.8.0.1:3080`.
 
 ### Quick Commands to Pull Models:
 ```bash
@@ -236,5 +236,5 @@ Add this to your local machine's `~/.continue/config.json`:
 * **Active Stack**: **Ollama + Open WebUI** deployed via Docker Compose with direct NVIDIA GPU passthrough.
 * **Storage Location**: **100% Fast SSD Storage** (`/data/ai/ollama` and `/data/ai/open-webui`) on the 456 GB LVM SSD pool.
   * *Rationale*: 7B–8B Q4 models take only ~4.5 GB each (12–15 GB total for a full stack). Keeping them on the SSD provides **instant ~8–10s cold starts** vs 1+ minute delays on mechanical HDDs.
-* **External Access**: Accessible locally on `http://192.168.1.68:3000` or securely on the road via WireGuard (`http://10.8.0.1:3000`).
+* **External Access**: Accessible locally on `http://192.168.1.68:3080` or securely on the road via WireGuard (`http://10.8.0.1:3080`).
 * **Future Expansions**: LiteLLM (multi-provider gateway) and Continue.dev (VS Code coding assistant) can plug directly into the running Ollama instance (`:11434`) at any time without reconfiguring the base stack.
