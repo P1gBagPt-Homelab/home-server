@@ -141,7 +141,30 @@ If you prefer configuring via the web UI:
 
 ---
 
-## 4. Step 2: Verify SSL Issuance Internally
+## 4. Step 2: Dual DuckDNS Split Configuration (Private Services + VPN Endpoint)
+
+When closing public ports 80 & 443 on your router, DuckDNS must not point your web services to your public IP (otherwise your devices will try to connect to the router's closed public ports). 
+
+Instead, configure two domains on [DuckDNS.org](https://www.duckdns.org):
+
+1. **`janus-lab` (Web Services)**:
+   * Set IP to your server's static LAN IP: **`192.168.1.68`**
+   * Click **`update ip`**.
+   * *Why*: All subdomains (`docs.janus-lab...`, `control.janus-lab...`, etc.) will resolve directly to your internal server on LAN and across WireGuard, keeping them completely private from the internet.
+   * *Note*: Let's Encrypt DNS-01 validation uses TXT records, so it continues to issue valid SSL certificates without needing a public A record.
+
+2. **`janus-vpn` (WireGuard Gateway Endpoint)**:
+   * Create new subdomain: **`janus-vpn`**.
+   * Set IP to your router's **Public WAN IP** (e.g., `89.115.36.46`).
+   * In your WireGuard Compose file (`/data/compose/wireguard/docker-compose.yml`), ensure:
+     ```yaml
+     - WG_HOST=janus-vpn.duckdns.org
+     ```
+   * *Why*: Remote WireGuard clients (mobile phones/laptops on 4G/5G) can always find your home router on UDP 51820.
+
+---
+
+## 5. Step 3: Verify SSL Issuance Internally
 
 Before touching your router, verify that Traefik successfully generates certificates via DNS-01:
 
@@ -155,7 +178,7 @@ Before touching your router, verify that Traefik successfully generates certific
 
 ---
 
-## 5. Step 3: Remove Port 80 & 443 on Vodafone Smart Router
+## 6. Step 4: Remove Port 80 & 443 on Vodafone Smart Router
 
 Now that Traefik validates certificates through the cloud via DuckDNS without needing inbound traffic, **delete the public web forwardings**:
 
@@ -170,7 +193,7 @@ Now that Traefik validates certificates through the cloud via DuckDNS without ne
 
 ---
 
-## 6. Step 4: Verification & Penetration Test (Zero-Exposure Proof)
+## 7. Step 5: Verification & Penetration Test (Zero-Exposure Proof)
 
 Run these two quick tests to confirm your new security posture:
 
