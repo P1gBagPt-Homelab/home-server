@@ -3,7 +3,7 @@
 > **Status**: ✅ **Implemented & Verified on Project Janus**  
 > * **Platform**: Coolify PaaS (Docker Compose)  
 > * **Stack**: Grafana (Visual Dashboards), Prometheus (Time-Series Metrics DB), cAdvisor (Per-Container Hardware Profiling), Loki & Promtail (Centralized Container Logs)  
-> * **Grafana Web UI**: `https://grafana.janus-lab.duckdns.org` (Port 3000)  
+> * **Grafana Web UI**: `https://grafana.your-domain.duckdns.org` (Port 3000)  
 > * **Internal Metrics Endpoints**:  
 >   * Prometheus: `http://prometheus:9090`  
 >   * cAdvisor: `http://cadvisor:8080`  
@@ -28,7 +28,7 @@ This **Observability Stack** provides a unified, single-pane-of-glass dashboard 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        Traefik Reverse Proxy                           │
-│               https://grafana.janus-lab.duckdns.org (Port 443)         │
+│               https://grafana.your-domain.duckdns.org (Port 443)         │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │ Port 3000 (SSO / Admin UI)
                                     ▼
@@ -178,7 +178,7 @@ services:
       - GF_SECURITY_ADMIN_USER=janus-admin
       - GF_SECURITY_ADMIN_PASSWORD=GenerateAStrongPasswordHere_123!
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=https://grafana.janus-lab.duckdns.org
+      - GF_SERVER_ROOT_URL=https://grafana.your-domain.duckdns.org
     volumes:
       - /data/volumes/grafana:/var/lib/grafana
     ports:
@@ -257,17 +257,17 @@ networks:
 1. In the **`Observability-Stack`** resource in Coolify, go to the **Domains** tab:
 2. Click **+ Add Domain**:
    * **Service application**: Select **`grafana (grafana/grafana:latest)`** *(Important: ensure it is `grafana`, not `cadvisor`)*
-   * **Domain**: `https://grafana.janus-lab.duckdns.org`
+   * **Domain**: `https://grafana.your-domain.duckdns.org`
    * **Port**: `3000`
    * **Protocol**: `HTTP -> HTTPS`
 3. Click **Save** and click **Deploy**.
-4. Traefik will automatically provision wildcard SSL for `https://grafana.janus-lab.duckdns.org`.
+4. Traefik will automatically provision wildcard SSL for `https://grafana.your-domain.duckdns.org`.
 
 ---
 
 ## 4. Connecting Data Sources in Grafana
 
-1. Open `https://grafana.janus-lab.duckdns.org` and log in with your `janus-admin` password.
+1. Open `https://grafana.your-domain.duckdns.org` and log in with your `janus-admin` password.
 2. Go to **Connections > Data Sources > + Add data source**.
 
 ### A. Add Prometheus:

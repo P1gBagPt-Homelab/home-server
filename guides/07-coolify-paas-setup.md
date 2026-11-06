@@ -3,8 +3,8 @@
 > **Status**: ✅ **Fully Deployed & Operational on Project Janus**  
 > * **Coolify Dashboard**: `http://192.168.1.68:8000` (and `http://10.8.0.1:8000` over WireGuard).
 > * **Shared Databases**: PostgreSQL 18 & Redis 7.2 running on the shared `coolify` network.
-> * **Docmost Wiki**: Deployed at `https://docs.janus-lab.duckdns.org` with Traefik Let's Encrypt SSL.
-> * **Vaultwarden Password Manager**: Deployed at `https://vault.janus-lab.duckdns.org` with PostgreSQL 18 backend.
+> * **Docmost Wiki**: Deployed at `https://docs.your-domain.duckdns.org` with Traefik Let's Encrypt SSL.
+> * **Vaultwarden Password Manager**: Deployed at `https://vault.your-domain.duckdns.org` with PostgreSQL 18 backend.
 > * **GitHub Integration**: Connected to GitHub App (`daniel-github`) for automated `git push` deployments.
 
 This guide walks you through installing **Coolify** on Ubuntu Server 24.04 LTS, setting up your GitHub integration, provisioning **Shared PostgreSQL** and **Redis**, deploying **Docmost**, and launching mini projects via `git push`.
@@ -232,7 +232,7 @@ services:
     container_name: docmost
     restart: unless-stopped
     environment:
-      - APP_URL=https://docs.janus-lab.duckdns.org
+      - APP_URL=https://docs.your-domain.duckdns.org
       - APP_SECRET=PASTE_YOUR_32_CHAR_SECRET_HERE
       - DATABASE_URL=postgresql://postgres:PASTE_POSTGRES_PASSWORD@PASTE_POSTGRES_CONTAINER_ID:5432/postgres?sslmode=disable
       - REDIS_URL=redis://:PASTE_REDIS_PASSWORD@PASTE_REDIS_CONTAINER_ID:6379/0
@@ -256,7 +256,7 @@ networks:
 6. **Domain & SSL Configuration**:
    * In the left sidebar, click **Domains > + Add Domain**.
    * Protocol: `https`
-   * Domain: `docs.janus-lab.duckdns.org`
+   * Domain: `docs.your-domain.duckdns.org`
    * Port: `3000`
    * Click **Save**.
 7. In the top-right corner, click the dropdown next to the action button and click **Deploy** (or *Redeploy*).
@@ -302,7 +302,7 @@ services:
     restart: unless-stopped
     environment:
       - 'DATABASE_URL=postgresql://vaultwarden:PASTE_PASSWORD@o4nipot4qcoaskqwss3zf6bq:5432/vaultwarden'
-      - 'DOMAIN=https://vault.janus-lab.duckdns.org'
+      - 'DOMAIN=https://vault.your-domain.duckdns.org'
       - WEBSOCKET_ENABLED=true
       - SIGNUPS_ALLOWED=true
       - INVITATIONS_ALLOWED=false
@@ -323,13 +323,13 @@ networks:
 
 ### 3. Domain & SSL Setup:
 1. In Vaultwarden's **Domains** tab in Coolify:
-   * Domain: `https://vault.janus-lab.duckdns.org`
+   * Domain: `https://vault.your-domain.duckdns.org`
    * Internal Port: `80`
    * Protocol redirect: `HTTP -> HTTPS`
 2. Click **Save** and trigger a **Redeploy** from the top-right dropdown.
 
 ### 4. Critical Post-Setup Hardening:
-1. Navigate to `https://vault.janus-lab.duckdns.org` and create your personal master account.
+1. Navigate to `https://vault.your-domain.duckdns.org` and create your personal master account.
 2. Once logged in, return to Coolify and update the environment variable:
    ```yaml
    SIGNUPS_ALLOWED=false
@@ -339,7 +339,7 @@ networks:
 ### 5. Connecting Client Apps:
 In official Bitwarden apps (iOS, Android, Chrome/Firefox extensions, macOS/Windows):
 1. Click the **Gear icon ⚙️** on the login screen.
-2. In **Server URL**, enter: `https://vault.janus-lab.duckdns.org`.
+2. In **Server URL**, enter: `https://vault.your-domain.duckdns.org`.
 3. Log in with your master credentials. All vaults, passkeys, and 2FA tokens will sync across all devices with offline-caching support.
 
 ---

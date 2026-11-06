@@ -3,8 +3,8 @@
 > **Status**: ✅ **Verified & Deployed on Project Janus**  
 > * **Platform**: Coolify PaaS (Docker Compose)  
 > * **Service Name**: `glitchtip` (in `Infrastructure` or `Core Services` project)  
-> * **Web UI**: `https://errors.janus-lab.duckdns.org` (Internal Port 8000)  
-> * **Sentry SDK Ingestion Endpoint**: `https://errors.janus-lab.duckdns.org/api/<project-id>/envelope/`  
+> * **Web UI**: `https://errors.your-domain.duckdns.org` (Internal Port 8000)  
+> * **Sentry SDK Ingestion Endpoint**: `https://errors.your-domain.duckdns.org/api/<project-id>/envelope/`  
 > * **Database**: Dedicated `glitchtip` database on shared PostgreSQL 18  
 > * **Cache & Celery Broker**: Dedicated DB index on shared Redis 7.2  
 > * **Storage**: `/data/volumes/glitchtip` on SSD Pool (or MinIO S3 `glitchtip-data` bucket)  
@@ -25,7 +25,7 @@ While **Prometheus + Grafana** (Guide 16) monitors server load and **Loki** stor
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        Traefik Reverse Proxy                           │
-│               https://errors.janus-lab.duckdns.org (Port 443)          │
+│               https://errors.your-domain.duckdns.org (Port 443)          │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │ Port 8000 (UI & Event Ingestion API)
                                     ▼
@@ -162,9 +162,9 @@ services:
       - DATABASE_URL=postgresql://glitchtip:YOUR_POSTGRES_PASSWORD@POSTGRES_CONTAINER_ID:5432/glitchtip
       - REDIS_URL=redis://:YOUR_REDIS_PASSWORD@REDIS_CONTAINER_ID:6379/2
       - SECRET_KEY=GENERATE_64_CHAR_SECRET_KEY
-      - GLITCHTIP_DOMAIN=https://errors.janus-lab.duckdns.org
+      - GLITCHTIP_DOMAIN=https://errors.your-domain.duckdns.org
       - ENABLE_USER_REGISTRATION=True
-      - DEFAULT_FROM_EMAIL=glitchtip@janus-lab.duckdns.org
+      - DEFAULT_FROM_EMAIL=glitchtip@your-domain.duckdns.org
       - EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
       - I_PAID_FOR_GLITCHTIP=True
     volumes:
@@ -183,9 +183,9 @@ services:
       - DATABASE_URL=postgresql://glitchtip:YOUR_POSTGRES_PASSWORD@POSTGRES_CONTAINER_ID:5432/glitchtip
       - REDIS_URL=redis://:YOUR_REDIS_PASSWORD@REDIS_CONTAINER_ID:6379/2
       - SECRET_KEY=GENERATE_64_CHAR_SECRET_KEY
-      - GLITCHTIP_DOMAIN=https://errors.janus-lab.duckdns.org
+      - GLITCHTIP_DOMAIN=https://errors.your-domain.duckdns.org
       - ENABLE_USER_REGISTRATION=True
-      - DEFAULT_FROM_EMAIL=glitchtip@janus-lab.duckdns.org
+      - DEFAULT_FROM_EMAIL=glitchtip@your-domain.duckdns.org
       - EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
       - I_PAID_FOR_GLITCHTIP=True
     volumes:
@@ -210,7 +210,7 @@ networks:
 1. In the Coolify resource configuration, click the **web** service.
 2. In the left sidebar, click **Domains > + Add Domain**.
 3. Configure:
-   * **Domain**: `https://errors.janus-lab.duckdns.org`
+   * **Domain**: `https://errors.your-domain.duckdns.org`
    * **Port**: `8000`
 4. Click **Save**.
 5. Ensure **Network** is set to `Attach to predefined network` (`coolify`).
@@ -226,7 +226,7 @@ On deploy, the `migrate` service runs `./bin/run-migrate.sh` first to execute al
 ### Option A: Web Registration (Temporarily Enabled)
 1. Open your browser and navigate to:
    ```text
-   https://errors.janus-lab.duckdns.org/register
+   https://errors.your-domain.duckdns.org/register
    ```
 2. Enter your email (e.g. `daniel@...`) and set your master password.
 3. Click **Sign Up**. You will be logged into your new GlitchTip instance.
@@ -261,7 +261,7 @@ Because your instance is reachable via Traefik over DuckDNS, **disable public re
 3. Click **Create Project**.
 4. GlitchTip displays your project's **DSN (Data Source Name)**:
    ```text
-   https://4f9a0c1e82b74052bf19aa910243e8@errors.janus-lab.duckdns.org/1
+   https://4f9a0c1e82b74052bf19aa910243e8@errors.your-domain.duckdns.org/1
    ```
    *(Keep this DSN handy—this is the single URL you pass to your applications to report crashes).*
 
@@ -283,7 +283,7 @@ In your application entry point (`main.py`):
 import sentry_sdk
 
 sentry_sdk.init(
-    dsn="https://4f9a0c1e82b74052bf19aa910243e8@errors.janus-lab.duckdns.org/1",
+    dsn="https://4f9a0c1e82b74052bf19aa910243e8@errors.your-domain.duckdns.org/1",
     # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring
     traces_sample_rate=1.0,
     # Attach local variables to stack traces
@@ -305,7 +305,7 @@ from fastapi import FastAPI
 import sentry_sdk
 
 sentry_sdk.init(
-    dsn="https://4f9a0c1e82b74052bf19aa910243e8@errors.janus-lab.duckdns.org/1",
+    dsn="https://4f9a0c1e82b74052bf19aa910243e8@errors.your-domain.duckdns.org/1",
     traces_sample_rate=0.2
 )
 
@@ -331,7 +331,7 @@ In your `server.ts` or `index.js`:
 import * as Sentry from "@sentry/node";
 
 Sentry.init({
-  dsn: "https://4f9a0c1e82b74052bf19aa910243e8@errors.janus-lab.duckdns.org/1",
+  dsn: "https://4f9a0c1e82b74052bf19aa910243e8@errors.your-domain.duckdns.org/1",
   tracesSampleRate: 1.0,
   environment: "production",
 });
@@ -354,7 +354,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.UseSentry(o =>
 {
-    o.Dsn = "https://4f9a0c1e82b74052bf19aa910243e8@errors.janus-lab.duckdns.org/1";
+    o.Dsn = "https://4f9a0c1e82b74052bf19aa910243e8@errors.your-domain.duckdns.org/1";
     o.Debug = false;
     o.TracesSampleRate = 1.0;
     o.SendDefaultPii = true;
@@ -370,7 +370,7 @@ app.Run();
 ## 7. Verifying Crash Capture in GlitchTip
 
 1. Trigger a test error in one of your applications.
-2. Open `https://errors.janus-lab.duckdns.org/issues`.
+2. Open `https://errors.your-domain.duckdns.org/issues`.
 3. Within 2 seconds, you will see a new issue appear:
    * **Issue Title**: e.g., `ZeroDivisionError: division by zero` or `IndexError: list index out of range`.
    * **Stack Trace**: Highlights the exact line in your source code file.

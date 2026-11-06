@@ -40,7 +40,7 @@ Coolify provides Git-based automated deployments, 1-click database provisioning,
 2. **Full-Stack on Your Own Hardware**:
    * Unlike cloud Vercel (which only hosts stateless frontends), Coolify on Janus hosts your frontends, backend APIs, persistent databases, and file storage on your dedicated server disks.
 3. **No More Manual Proxy Configuration**:
-   * Coolify has an embedded **Traefik** reverse proxy. Whenever you deploy a project or database, you simply enter your domain (e.g., `https://myapp.janus-lab.duckdns.org`), and Coolify provisions SSL and handles routing automatically.
+   * Coolify has an embedded **Traefik** reverse proxy. Whenever you deploy a project or database, you simply enter your domain (e.g., `https://myapp.your-domain.duckdns.org`), and Coolify provisions SSL and handles routing automatically.
 
 ---
 
@@ -74,10 +74,10 @@ Coolify stores all application configurations, Docker persistent volumes, and da
 In Coolify, shared services are created through the UI with one click:
 * **PostgreSQL 18**: Central database container running on the shared `coolify` network.
 * **Redis 7.2**: Central in-memory caching and queuing service.
-* **MinIO S3**: Central S3-compatible object storage with isolated per-project IAM buckets (`s3.janus-lab.duckdns.org`).
+* **MinIO S3**: Central S3-compatible object storage with isolated per-project IAM buckets (`s3.your-domain.duckdns.org`).
 * **Docmost**: Centralized documentation wiki running alongside your apps.
-* **Jellyfin**: Hardware-accelerated media streaming server (`https://stream.janus-lab.duckdns.org` and `http://192.168.1.68:8096`).
-* **Uptime Kuma v2**: Uptime monitoring and instant incident notification gateway (`status.janus-lab.duckdns.org` or `http://192.168.1.68:3001`).
+* **Jellyfin**: Hardware-accelerated media streaming server (`https://stream.your-domain.duckdns.org` and `http://192.168.1.68:8096`).
+* **Uptime Kuma v2**: Uptime monitoring and instant incident notification gateway (`status.your-domain.duckdns.org` or `http://192.168.1.68:3001`).
 * **Netdata**: Real-time per-second system telemetry and RTX 2070 GPU monitoring (`http://192.168.1.68:19999` or over WireGuard `http://10.8.0.1:19999`).
 
 ---

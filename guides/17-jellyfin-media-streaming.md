@@ -2,7 +2,7 @@
 
 > **Status**: ✅ **Fully Deployed & Operational on Project Janus**  
 > * **Service**: [Jellyfin](https://jellyfin.org/) (Open-Source Media System)  
-> * **Public SSL URL**: [`https://stream.janus-lab.duckdns.org`](https://stream.janus-lab.duckdns.org)  
+> * **Public SSL URL**: [`https://stream.your-domain.duckdns.org`](https://stream.your-domain.duckdns.org)  
 > * **Local LAN Endpoint**: `http://192.168.1.68:8096`  
 > * **Platform**: Coolify PaaS (Docker Compose)  
 > * **Hardware Acceleration**: ASUS ROG Strix RTX 2070 (NVIDIA NVENC)  
@@ -81,7 +81,7 @@ services:
 ```
 
 ### Traefik Reverse Proxy & SSL Configuration
-* **Domain**: `stream.janus-lab.duckdns.org`
+* **Domain**: `stream.your-domain.duckdns.org`
 * **Internal Routing Port**: `8096`
 * Automated Let's Encrypt Wildcard SSL handled by Traefik.
 
@@ -137,7 +137,7 @@ Jellyfin automatically queries TheMovieDB (TMDb) for posters, plot summaries, ra
 
 ### Uploading Files from Mac / PC
 Connect via SFTP using **Cyberduck** or **FileZilla**:
-* **Host**: `192.168.1.68` (or `stream.janus-lab.duckdns.org`)
+* **Host**: `192.168.1.68` (or `stream.your-domain.duckdns.org`)
 * **Port**: `22` (SSH)
 * **Destination**: `/data/storage/media/movies/`
 

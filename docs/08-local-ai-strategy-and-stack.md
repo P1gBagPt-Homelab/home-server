@@ -90,7 +90,7 @@ With **8 GB VRAM** and **40 GB System RAM**, Janus falls into two performance ti
 ## 4. Top 5 Homelab AI Implementations to Explore
 
 ### 1. Private "ChatGPT" with Web Search & Document Knowledge (Open WebUI)
-* **What it does**: A private, ad-free web dashboard at `https://ai.janus-lab.duckdns.org` (protected by WireGuard / Coolify).
+* **What it does**: A private, ad-free web dashboard at `https://ai.your-domain.duckdns.org` (protected by WireGuard / Coolify).
 * **Key Features**:
   * Upload PDFs, text docs, or code repos and chat directly against them using local embeddings.
   * Integrate with **SearXNG** or DuckDuckGo for live internet browsing.
@@ -189,7 +189,7 @@ services:
       - ollama
 ```
 
-* **Coolify Traefik Domain**: `https://ai.janus-lab.duckdns.org` with container port `8080`.
+* **Coolify Traefik Domain**: `https://ai.your-domain.duckdns.org` with container port `8080`.
 * **Direct LAN / WireGuard URL**: `http://192.168.1.68:3080` or `http://10.8.0.1:3080`.
 
 ### Quick Commands to Pull Models:
