@@ -45,7 +45,7 @@ Janus already provides a unified production-grade platform:
 
 ---
 
-## 2. The 10-Step Mini-Project Checklist
+## 2. The 12-Step Mini-Project Checklist
 
 Follow this linear checklist whenever you kick off a new application:
 
@@ -57,9 +57,11 @@ Follow this linear checklist whenever you kick off a new application:
 [ ] 5. (Optional) Hook into Local AI via Ollama API
 [ ] 6. Allocate correct storage path (/data/volumes vs /data/storage)
 [ ] 7. Define Dockerfile or docker-compose.yml on 'coolify' network
-[ ] 8. Register Application in Coolify & assign domain
-[ ] 9. Add GitHub Secrets & deploy.yml for automated push deployments
-[ ] 10. Register health monitor in Uptime Kuma & JanusDeck Portal
+[ ] 8. Implement 5 Golden Endpoints (/healthz, /readyz, /version) & Scalar (/docs)
+[ ] 9. Create Bruno API test suite in repo under `bruno/`
+[ ] 10. Register Application in Coolify & assign domain
+[ ] 11. Add GitHub Secrets & deploy.yml with automated Bruno CLI tests
+[ ] 12. Register health monitor in Uptime Kuma (/readyz) & JanusDeck Portal
 ```
 
 ---
@@ -297,7 +299,41 @@ networks:
 
 ---
 
-### Step 8: Coolify PaaS Registration & Domain Routing
+### Step 8: Standardized Endpoints & Scalar Documentation
+
+Every backend application on Janus must implement standardized operational endpoints and self-contained documentation (see **[Guide 22](22-api-standards-documentation-and-testing.md)** for full details):
+
+1. **Expose the 5 Golden Endpoints**:
+   * `GET /healthz`: Process liveness check (`{"status": "alive"}`).
+   * `GET /readyz`: Dependency readiness checking active connections to PostgreSQL, Redis, and MinIO.
+   * `GET /version`: Current semantic version, git commit SHA, and environment.
+   * `GET /openapi.json`: Machine-readable OpenAPI 3.1 specification.
+   * `GET /docs`: Modern, zero-overhead interactive **Scalar** API documentation embedded directly in the app.
+
+2. **Error Standards & GlitchTip Integration**:
+   * Standardize error responses using RFC 7807 Problem Details (`type`, `title`, `status`, `detail`, `instance`, `trace_id`).
+   * Pass incoming or generated `X-Request-ID` headers to **GlitchTip** ([Guide 18](18-application-error-tracking-glitchtip.md)) so production errors map directly to stack traces.
+
+---
+
+### Step 9: Git-Native API Test Suite (Bruno)
+
+Never let APIs break in silence. Commit functional tests directly into your repository using **Bruno** (100% Free & Open-Source):
+
+1. Initialize a `bruno/` directory in your repo:
+   ```bash
+   mkdir -p bruno/environments
+   ```
+2. Define `bruno/environments/Local.bru` (`baseUrl: http://localhost:8000`) and `Janus-Prod.bru`.
+3. Add smoke tests for `/healthz`, `/readyz`, and primary CRUD routes with assertions.
+4. Verify locally using the free Bruno Desktop GUI or CLI:
+   ```bash
+   bru run bruno --env Local
+   ```
+
+---
+
+### Step 10: Coolify PaaS Registration & Domain Routing
 
 1. Open Coolify: `http://192.168.1.68:8000` (or `http://10.8.0.1:8000` via WireGuard).
 2. Go to your **Projects** $\rightarrow$ select your project (e.g. `Applications` or `Mini-Projects`).
@@ -306,23 +342,23 @@ networks:
 5. Under **Domains**:
    * Add: `https://<app_name>.your-domain.duckdns.org`
    * Internal Port: Match your container port (e.g. `3000` or `8000`).
-   * Traefik will automatically issue a Let's Encrypt SSL certificate!
+   * Traefik will automatically issue a Let's Encrypt SSL certificate via DuckDNS DNS-01!
 6. Note the application's unique **UUID** from the browser URL (e.g. `rvi8hu1owmes3shdpsiuyz3q`).
 
 ---
 
-### Step 9: Automated CI/CD (GitHub Actions)
+### Step 11: Automated CI/CD with Bruno Quality Gates (GitHub Actions)
 
-Add continuous deployment so pushing to `main` instantly updates the running container on your server:
+Add continuous deployment so pushing to `main` executes Bruno tests and linters on the Janus self-hosted runner before triggering a Coolify update:
 
 1. **Add Repository Secrets** in GitHub (`Settings > Secrets and variables > Actions`):
    * `COOLIFY_HOST`: `http://192.168.1.68:8000`
-   * `COOLIFY_UUID`: `<app-uuid-from-step-8>`
+   * `COOLIFY_UUID`: `<app-uuid-from-step-10>`
    * `COOLIFY_TOKEN`: `<your-coolify-api-token>`
 
 2. **Add `.github/workflows/deploy.yml`**:
    ```yaml
-   name: Deploy to Project Janus
+   name: Quality Gates and Deploy to Janus
 
    on:
      push:
@@ -331,8 +367,31 @@ Add continuous deployment so pushing to `main` instantly updates the running con
      workflow_dispatch:
 
    jobs:
+     test:
+       name: Lint & Bruno Smoke Tests
+       runs-on: self-hosted  # 100% free runner on Janus
+       steps:
+         - name: Checkout Code
+           uses: actions/checkout@v4
+
+         - name: Install Bruno CLI
+           run: npm install -g @usebruno/cli
+
+         - name: Start Ephemeral App Container
+           run: |
+             docker compose up -d --build
+             timeout 30 sh -c 'until curl -sf http://localhost:8000/healthz; do sleep 1; done'
+
+         - name: Run Bruno Test Suite
+           run: bru run bruno --env Local --bail
+
+         - name: Tear Down Test Container
+           if: always()
+           run: docker compose down -v
+
      deploy:
        name: Trigger Coolify Redeploy
+       needs: test
        runs-on: self-hosted
        steps:
          - name: Trigger Coolify Deployment
@@ -341,7 +400,7 @@ Add continuous deployment so pushing to `main` instantly updates the running con
              COOLIFY_UUID: ${{ secrets.COOLIFY_UUID }}
              COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
            run: |
-             echo "🚀 Triggering deployment on Janus..."
+             echo "🚀 Quality gates passed. Triggering deployment on Janus..."
              RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
                -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
                -H "Content-Type: application/json" \
@@ -358,16 +417,16 @@ Add continuous deployment so pushing to `main` instantly updates the running con
 
 ---
 
-### Step 10: Observability, Alerts & Portal Listing
+### Step 12: Observability, Alerts & Portal Listing
 
 Complete the operational lifecycle so you always know your app is healthy:
 
 1. **Uptime Kuma Health Check**:
    * Visit `https://status.your-domain.duckdns.org`.
    * Click **+ Add New Monitor**.
-   * Type: `HTTP(s)` $\rightarrow$ URL: `https://<app_name>.your-domain.duckdns.org/health` (or `/`).
+   * Type: `HTTP(s)` $\rightarrow$ URL: `https://<app_name>.your-domain.duckdns.org/readyz`.
    * Heartbeat: `60 seconds`.
-   * *Outcome:* You get immediate Discord/Telegram alerts if the app crashes or throws 500 errors.
+   * *Outcome:* Proactively monitors dependencies (DB, Redis, S3). You get immediate Discord/Telegram alerts if the app or any dependency degrades.
 
 2. **JanusDeck Listing**:
    * Visit `https://control.your-domain.duckdns.org`.

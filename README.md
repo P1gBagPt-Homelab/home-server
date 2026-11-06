@@ -181,6 +181,13 @@ A documentation repository and operational guide for running a dual-purpose pers
     * Preventing sticky Windows boot selection caused by `GRUB_SAVEDEFAULT` or cached `grubenv` flags.
     * Troubleshooting matrix for UEFI boot priority, `os-prober`, and one-shot `grub-reboot` workflows.
 
+22. [**Guide 22: API Standards, Git-Native Testing (Bruno) & Zero-Cost Docs (Scalar)**](guides/22-api-standards-documentation-and-testing.md)
+    * 100% Free and Open-Source API quality framework with zero cloud lock-in ($0/month).
+    * Embedded interactive Scalar documentation at `GET /docs` (0MB extra container footprint).
+    * Git-committed API collections and smoke tests with Bruno (`.bru` files in repo).
+    * CI quality gates running `@usebruno/cli` on Janus self-hosted runner before Coolify deployments.
+    * Enforced 5 Golden Endpoints (`/healthz`, `/readyz`, `/version`, `/openapi.json`, `/docs`) and RFC 7807 error format with GlitchTip correlation.
+
 ---
 
 ## 📌 Architecture Highlights
