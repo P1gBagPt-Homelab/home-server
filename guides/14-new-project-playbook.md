@@ -422,19 +422,30 @@ Add continuous deployment so pushing to `main` executes Bruno tests and linters 
 
 Complete the operational lifecycle so you always know your app is healthy:
 
-1. **Uptime Kuma Health Check**:
+1. **Grafana Dashboard (Zero-Config Telemetry & Logs)**:
+   * Visit `https://grafana.your-domain.duckdns.org` (Guide 16).
+   * No `prometheus.yml` edits needed! cAdvisor profiles CPU, RAM, and Network I/O automatically.
+   * **Prometheus Data Source UID**: `ag34fpmxm756od` (or `${DS_PROMETHEUS}`).
+   * **Container CPU & RAM**: Filter by Caddy routing label `container_label_caddy_0=~"https://<app_name>.*"` or container name `name=~".*<app_name>.*"`.
+   * **Live Logs (Loki)**: In Explore or Dashboards, query `{job="docker"} |= "<app_name>"`.
+
+2. **Uptime Kuma Health Check**:
    * Visit `https://status.your-domain.duckdns.org`.
    * Click **+ Add New Monitor**.
    * Type: `HTTP(s)` $\rightarrow$ URL: `https://<app_name>.your-domain.duckdns.org/readyz`.
    * Heartbeat: `60 seconds`.
    * *Outcome:* Proactively monitors dependencies (DB, Redis, S3). You get immediate Discord/Telegram alerts if the app or any dependency degrades.
 
-2. **JanusDeck Listing**:
+3. **GlitchTip Real-Time Error Tracking**:
+   * Visit `https://errors.your-domain.duckdns.org` (Guide 18).
+   * Create a project, copy the DSN, and inject `SENTRY_DSN` or `GLITCHTIP_DSN` into Coolify environment variables.
+
+4. **JanusDeck Listing**:
    * Visit `https://control.your-domain.duckdns.org`.
    * Click **+ Add Service** $\rightarrow$ Name: `<App Name>`, URL: `https://<app_name>.your-domain.duckdns.org`, Category: `Mini-Projects`.
    * *Outcome:* App appears in your central launcher with real-time green/red availability indicators.
 
-3. **Automated Nightly Backups**:
+5. **Automated Nightly Backups**:
    * Any database created in PostgreSQL 18 is automatically included in `/data/scripts/backup-janus.sh`.
    * If your app stores critical files outside PostgreSQL, verify its directory under `/data/volumes/<app_name>` is listed in the backup tar list to be encrypted via Rclone Crypt to your **5 TB Google Drive**.
 

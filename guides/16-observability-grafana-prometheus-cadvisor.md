@@ -275,6 +275,9 @@ networks:
 * **Prometheus server URL**: `http://prometheus:9090` *(Internal zero-latency Docker network address)*
 * Click **Save & test**. You should see a green checkmark: *"Data source is working"*.
 
+> [!IMPORTANT]
+> **Data Source UID in Dashboards**: Grafana generates an internal unique identifier for each data source (e.g., `ag34fpmxm756od` for Prometheus, `loki` for Loki). If you import or write custom JSON dashboards, always ensure the panel's `datasource.uid` matches the actual UID in your Grafana instance (visible in the URL when opening **Explore**), or use a dashboard data source variable `${DS_PROMETHEUS}` instead of hardcoding `"uid": "prometheus"`.
+
 ### B. Add Loki:
 * **Type**: `Loki`
 * **Loki URL**: `http://loki:3100`
@@ -300,11 +303,47 @@ Instead of designing charts manually from scratch, Grafana lets you import produ
 
 ---
 
-## 6. Instrumenting Mini-Projects for Metrics & Logs
+## 6. Mini-Project Observability Patterns
 
-To make any new mini-project automatically visible inside your Grafana charts:
+There are two distinct ways to monitor mini-projects on Project Janus:
 
-### 1. Python / FastAPI Example:
+### Pattern A: Zero-Config Container Telemetry (Recommended — No Server Config Needed)
+
+> [!TIP]
+> **No `prometheus.yml` modifications required.** Because cAdvisor and Promtail/Loki are already running globally on Janus, every Docker container deployed via Coolify is automatically monitored out-of-the-box for CPU, RAM, Network I/O, and centralized console logs.
+
+#### 1. How Container Identification Works:
+* **Reverse Proxy / Caddy Routing Labels**: Containers exposed through Coolify with Caddy carry routing labels like:
+  ```promql
+  container_label_caddy_0="https://<app>.<domain>"
+  ```
+* **Docker Container Name**: Any container (including non-public internal databases or workers) can also be matched by name:
+  ```promql
+  name=~".*<app_name>.*"
+  ```
+
+#### 2. Ready-to-Use PromQL Queries for Custom Dashboards:
+| Metric | PromQL Query | Description |
+| :--- | :--- | :--- |
+| **CPU Usage (Cores)** | `sum(rate(container_cpu_usage_seconds_total{container_label_caddy_0=~"https://<app>.*"}[1m])) by (container_label_caddy_0)` | Real-time CPU core allocation per container |
+| **RAM Working Set (Bytes)** | `sum(container_memory_working_set_bytes{container_label_caddy_0=~"https://<app>.*"}) by (container_label_caddy_0)` | Real active memory consumed (excludes cached pages) |
+| **Network Inbound (Bytes/s)** | `sum(rate(container_network_receive_bytes_total{container_label_caddy_0=~"https://<app>.*"}[1m])) by (container_label_caddy_0)` | Incoming bandwidth (requests and payload) |
+| **Network Outbound (Bytes/s)** | `sum(rate(container_network_transmit_bytes_total{container_label_caddy_0=~"https://<app>.*"}[1m])) by (container_label_caddy_0)` | Outgoing bandwidth (responses and uploads) |
+| **Container Restarts** | `sum(changes(container_start_time_seconds{name=~".*<app>.*"}[1h])) by (name)` | Detects crash loops and unexpected container restarts |
+
+#### 3. Zero-Config Centralized Logs (Loki):
+Promtail automatically ships logs for all Docker containers to Loki. In Grafana **Explore** or Dashboards, query:
+```logql
+{job="docker"} |= "<app_keyword>"
+```
+
+---
+
+### Pattern B: In-App Business Metrics (Optional — Requires Scrape Target)
+
+Use this pattern only if your application needs to expose custom application-layer counters (e.g., custom payment counters, order queues, or internal cache hits) via an HTTP `/metrics` endpoint.
+
+#### 1. Python / FastAPI Example:
 Install the official instrumentor:
 ```bash
 pip install prometheus-fastapi-instrumentator
@@ -325,8 +364,8 @@ def read_root():
     return {"message": "Hello from Project Janus!"}
 ```
 
-### 2. Node.js / Express Example:
-Install `prom-client`:
+#### 2. Node.js / Express or NestJS Example:
+Install `prom-client` (or `@willsoto/nestjs-prometheus` for NestJS):
 ```bash
 npm install prom-client
 ```
@@ -347,8 +386,8 @@ app.get('/metrics', async (req, res) => {
 app.listen(3000, () => console.log('Server running on port 3000'));
 ```
 
-### 3. Add to `prometheus.yml`:
-Whenever you deploy the app, add its target to `/data/volumes/prometheus/config/prometheus.yml`:
+#### 3. Add Scrape Target to `prometheus.yml`:
+Add the target to `/data/volumes/prometheus/config/prometheus.yml`:
 ```yaml
   - job_name: 'my-mini-project'
     metrics_path: '/metrics'
