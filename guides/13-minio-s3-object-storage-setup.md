@@ -105,12 +105,14 @@ services:
       - "traefik.http.routers.minio-api.rule=Host(`s3.your-domain.duckdns.org`)"
       - "traefik.http.routers.minio-api.entrypoints=https"
       - "traefik.http.routers.minio-api.tls=true"
+      - "traefik.http.routers.minio-api.tls.certresolver=letsencrypt"
       - "traefik.http.routers.minio-api.service=minio-api"
       - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
       # Console Web UI Routing (minio.your-domain.duckdns.org)
       - "traefik.http.routers.minio-console.rule=Host(`minio.your-domain.duckdns.org`)"
       - "traefik.http.routers.minio-console.entrypoints=https"
       - "traefik.http.routers.minio-console.tls=true"
+      - "traefik.http.routers.minio-console.tls.certresolver=letsencrypt"
       - "traefik.http.routers.minio-console.service=minio-console"
       - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
 ```
