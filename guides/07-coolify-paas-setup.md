@@ -376,13 +376,16 @@ Create the repository under **`P1gBagPt-Homelab`** (e.g. `https://github.com/P1g
 2. Select your repository (`P1gBagPt-Homelab/my-new-project`) and branch `main`.
 3. Note the application's unique **UUID** from the URL bar (e.g. `rvi8hu1owmes3shdpsiuyz3q`).
 
-#### 3. Add GitHub Secrets to the Repository
-In the repository's **Settings > Secrets and variables > Actions**, add:
-* `COOLIFY_HOST`: `http://192.168.1.68:8000`
-* `COOLIFY_UUID`: `<your-app-uuid-from-coolify>`
-* `COOLIFY_TOKEN`: `<your-coolify-api-token>`
+#### 3. Add GitHub Secrets to the Repository (via CLI)
+> [!NOTE]
+> Because GitHub does not allow sharing organization-level secrets with private repositories on the Free plan, secrets are set per repository using `gh secret set` in seconds:
 
-*(Tip: You can set these in 5 seconds from your terminal using `gh secret set COOLIFY_TOKEN`)*.
+```bash
+gh secret set COOLIFY_HOST --repo P1gBagPt-Homelab/<repo-name> --body "http://192.168.1.68:8000"
+gh secret set COOLIFY_TOKEN --repo P1gBagPt-Homelab/<repo-name> --body "<your-coolify-api-token>"
+gh secret set COOLIFY_UUID --repo P1gBagPt-Homelab/<repo-name> --body "<your-app-uuid-from-coolify>"
+```
+*(Alternative: You can store the token directly on Janus in `~/.coolify_token` and embed the UUID in `deploy.yml`, eliminating secrets completely).*
 
 #### 4. Add the Universal Deployment Workflow
 Create `.github/workflows/deploy.yml` in your project:
@@ -400,21 +403,46 @@ jobs:
   deploy:
     name: Trigger Coolify Redeploy
     runs-on: self-hosted
+    timeout-minutes: 2
     steps:
       - name: Trigger Coolify Deployment
         env:
           COOLIFY_HOST: ${{ secrets.COOLIFY_HOST }}
           COOLIFY_UUID: ${{ secrets.COOLIFY_UUID }}
-          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         run: |
-          echo "🚀 Triggering Coolify redeploy on ${COOLIFY_HOST}..."
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-            -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
+          TOKEN=""
+          if [ -f "$HOME/.coolify_token" ]; then
+            TOKEN=$(tr -d '\r\n ' < "$HOME/.coolify_token")
+          elif [ -f "/home/daniel/.coolify_token" ]; then
+            TOKEN=$(tr -d '\r\n ' < "/home/daniel/.coolify_token")
+          elif [ -n "${{ secrets.COOLIFY_TOKEN }}" ]; then
+            TOKEN="${{ secrets.COOLIFY_TOKEN }}"
+          fi
+
+          if [ -z "$TOKEN" ]; then
+            echo "❌ Coolify API Token not found on Janus or in secrets!"
+            exit 1
+          fi
+
+          HOST="${COOLIFY_HOST:-http://192.168.1.68:8000}"
+          UUID="${COOLIFY_UUID:-YOUR_APP_UUID_HERE}"
+
+          if [ -z "$UUID" ] || [ "$UUID" = "YOUR_APP_UUID_HERE" ]; then
+            echo "❌ Coolify application UUID not set!"
+            exit 1
+          fi
+
+          echo "🚀 Triggering Coolify redeploy on ${HOST}..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 30 -X POST \
+            -H "Authorization: Bearer ${TOKEN}" \
             -H "Content-Type: application/json" \
-            "${COOLIFY_HOST}/api/v1/deploy?uuid=${COOLIFY_UUID}&force=false")
+            "${HOST}/api/v1/deploy?uuid=${UUID}&force=false")
           
           HTTP_STATUS=$(echo "${RESPONSE}" | tail -n1)
           BODY=$(echo "${RESPONSE}" | sed '$d')
+
+          echo "Response Body: ${BODY}"
+          echo "HTTP Status: ${HTTP_STATUS}"
           
           if [ "${HTTP_STATUS}" -eq 200 ]; then
             echo "✅ Deployment successfully queued on Coolify!"

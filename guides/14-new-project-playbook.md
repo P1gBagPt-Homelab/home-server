@@ -351,10 +351,16 @@ Never let APIs break in silence. Commit functional tests directly into your repo
 
 Add continuous deployment so pushing to `main` executes Bruno tests and linters on the Janus self-hosted runner before triggering a Coolify update:
 
-1. **Add Repository Secrets** in GitHub (`Settings > Secrets and variables > Actions`):
-   * `COOLIFY_HOST`: `http://192.168.1.68:8000`
-   * `COOLIFY_UUID`: `<app-uuid-from-step-10>`
-   * `COOLIFY_TOKEN`: `<your-coolify-api-token>`
+> [!NOTE]
+> **GitHub Free & Private Repositories**: GitHub does not permit sharing organization secrets with private repositories on the Free plan. Set secrets directly per repository in 5 seconds via `gh secret set`, or set the application UUID as a default inside `deploy.yml`.
+
+1. **Add Repository Secrets via CLI** (or via `Settings > Secrets and variables > Actions`):
+   ```bash
+   gh secret set COOLIFY_HOST --repo P1gBagPt-Homelab/<repo-name> --body "http://192.168.1.68:8000"
+   gh secret set COOLIFY_TOKEN --repo P1gBagPt-Homelab/<repo-name> --body "<your-coolify-api-token>"
+   gh secret set COOLIFY_UUID --repo P1gBagPt-Homelab/<repo-name> --body "<app-uuid-from-coolify>"
+   ```
+   *(Find the Application UUID in Coolify from the URL bar `/application/<uuid>` or the General settings tab).*
 
 2. **Add `.github/workflows/deploy.yml`**:
    ```yaml
@@ -394,23 +400,51 @@ Add continuous deployment so pushing to `main` executes Bruno tests and linters 
        name: Trigger Coolify Redeploy
        needs: test
        runs-on: self-hosted
+       timeout-minutes: 2
        steps:
          - name: Trigger Coolify Deployment
+           env:
+             COOLIFY_HOST: ${{ secrets.COOLIFY_HOST }}
+             COOLIFY_UUID: ${{ secrets.COOLIFY_UUID }}
            run: |
-             # Resolve token from server local file (~/.coolify_token) or fallback secret
-             TOKEN=$(cat "$HOME/.coolify_token" 2>/dev/null || cat "/home/daniel/.coolify_token" 2>/dev/null || echo "${{ secrets.COOLIFY_TOKEN }}")
-             HOST="${{ secrets.COOLIFY_HOST }}"
-             HOST="${HOST:-http://192.168.1.68:8000}"
-             UUID="${{ secrets.COOLIFY_UUID }}"
-             UUID="${UUID:-YOUR_APP_UUID_HERE}"
+             # 1. Resolve token from server local file (~/.coolify_token) or GitHub secret
+             TOKEN=""
+             if [ -f "$HOME/.coolify_token" ]; then
+               TOKEN=$(tr -d '\r\n ' < "$HOME/.coolify_token")
+             elif [ -f "/home/daniel/.coolify_token" ]; then
+               TOKEN=$(tr -d '\r\n ' < "/home/daniel/.coolify_token")
+             elif [ -n "${{ secrets.COOLIFY_TOKEN }}" ]; then
+               TOKEN="${{ secrets.COOLIFY_TOKEN }}"
+             fi
 
-             echo "🚀 Quality gates passed. Triggering deployment on Janus..."
-             RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+             if [ -z "$TOKEN" ]; then
+               echo "❌ Coolify API Token not found on Janus or in secrets!"
+               exit 1
+             fi
+
+             # 2. Host (default to LAN)
+             HOST="${COOLIFY_HOST:-http://192.168.1.68:8000}"
+
+             # 3. Application UUID
+             UUID="${COOLIFY_UUID:-YOUR_APP_UUID_HERE}"
+
+             if [ -z "$UUID" ] || [ "$UUID" = "YOUR_APP_UUID_HERE" ]; then
+               echo "❌ Coolify application UUID not set!"
+               exit 1
+             fi
+
+             echo "🚀 Quality gates passed. Triggering deployment on Janus (${HOST})..."
+             RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 30 -X POST \
                -H "Authorization: Bearer ${TOKEN}" \
                -H "Content-Type: application/json" \
                "${HOST}/api/v1/deploy?uuid=${UUID}&force=false")
              
              HTTP_STATUS=$(echo "${RESPONSE}" | tail -n1)
+             BODY=$(echo "${RESPONSE}" | sed '$d')
+
+             echo "Response Body: ${BODY}"
+             echo "HTTP Status: ${HTTP_STATUS}"
+
              if [ "${HTTP_STATUS}" -eq 200 ]; then
                echo "✅ Deployment queued successfully on Coolify!"
              else
