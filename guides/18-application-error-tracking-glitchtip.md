@@ -142,6 +142,7 @@ services:
   migrate:
     image: glitchtip/glitchtip:latest
     container_name: glitchtip-migrate
+    restart: "no"
     command: ./bin/run-migrate.sh
     environment:
       - DATABASE_URL=postgresql://glitchtip:YOUR_POSTGRES_PASSWORD@POSTGRES_CONTAINER_ID:5432/glitchtip
@@ -399,3 +400,27 @@ When an app crashes in production at 3 AM, you want an immediate notification on
 
 * **PostgreSQL Backup**: The `glitchtip` database is included in your daily automated Rclone Crypt backup to Google Drive (Guide 10).
 * **Storage Pruning**: In GlitchTip, you can set event retention rules (e.g. delete resolved errors older than 30 or 60 days) to keep PostgreSQL database storage compact and fast.
+
+---
+
+## 10. Troubleshooting & Coolify Gotchas
+
+### Coolify Stack Status Shows "Degraded" / Migrate Container Restarting
+- **Symptom**: In Coolify, the GlitchTip stack shows `Degraded` and the `Migrate` container status is `Restarting (unknown)`.
+- **Cause**: The `migrate` container runs `./bin/run-migrate.sh` and exits with code `0` when migrations succeed. Without an explicit restart policy, Docker or Coolify attempts to keep the container running by restarting it indefinitely.
+- **Fix**: Set `restart: "no"` explicitly on the `migrate` service in your `docker-compose.yml`:
+  ```yaml
+  migrate:
+    image: glitchtip/glitchtip:latest
+    container_name: glitchtip-migrate
+    restart: "no"
+    command: ./bin/run-migrate.sh
+  ```
+
+### HTTP 200 on Ingest but Issues (0) on GlitchTip Web UI
+- **Symptom**: Client sends an error, GlitchTip web server returns `HTTP 200` (or `201`), but the UI shows `Issues (0)`.
+- **Cause**: Celery worker is failing to reach Redis or PostgreSQL. Check worker logs (`worker` container). A common issue in Coolify is `Temporary failure in name resolution` when `REDIS_URL` uses an invalid container name or unreachable host.
+- **Fix**:
+  1. Ensure Redis is connected to the same `coolify` Docker network.
+  2. Verify the Redis container hostname in `REDIS_URL` matches the internal DNS name or container name defined in Coolify (e.g., `redis` or container hash).
+  3. Once worker reconnects to Redis, it automatically processes the accumulated Celery task backlog.
