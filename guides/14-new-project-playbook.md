@@ -396,16 +396,19 @@ Add continuous deployment so pushing to `main` executes Bruno tests and linters 
        runs-on: self-hosted
        steps:
          - name: Trigger Coolify Deployment
-           env:
-             COOLIFY_HOST: ${{ secrets.COOLIFY_HOST }}
-             COOLIFY_UUID: ${{ secrets.COOLIFY_UUID }}
-             COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
            run: |
+             # Resolve token from server local file (~/.coolify_token) or fallback secret
+             TOKEN=$(cat "$HOME/.coolify_token" 2>/dev/null || cat "/home/daniel/.coolify_token" 2>/dev/null || echo "${{ secrets.COOLIFY_TOKEN }}")
+             HOST="${{ secrets.COOLIFY_HOST }}"
+             HOST="${HOST:-http://192.168.1.68:8000}"
+             UUID="${{ secrets.COOLIFY_UUID }}"
+             UUID="${UUID:-YOUR_APP_UUID_HERE}"
+
              echo "🚀 Quality gates passed. Triggering deployment on Janus..."
              RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-               -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
+               -H "Authorization: Bearer ${TOKEN}" \
                -H "Content-Type: application/json" \
-               "${COOLIFY_HOST}/api/v1/deploy?uuid=${COOLIFY_UUID}&force=false")
+               "${HOST}/api/v1/deploy?uuid=${UUID}&force=false")
              
              HTTP_STATUS=$(echo "${RESPONSE}" | tail -n1)
              if [ "${HTTP_STATUS}" -eq 200 ]; then
