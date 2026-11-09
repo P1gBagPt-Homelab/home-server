@@ -244,13 +244,37 @@ RCLONE_REMOTE="janus-backup-encrypted:"
 
 ---
 
-## 6. Pro-Tip: Single-Letter Alias (`j`)
+## 6. Shell Integrations & Quality of Life
 
-To make daily monitoring instantaneous, add this shortcut to your `~/.bashrc`:
+### 6.1 Pro-Tip: Single-Letter Alias (`j`)
+
+To make manual monitoring instantaneous, add this shortcut to your `~/.bashrc`:
 
 ```bash
 echo "alias j='janus'" >> ~/.bashrc
 source ~/.bashrc
 ```
 
-Now, whenever you SSH in or open your terminal, typing **`j`** and pressing Enter instantly gives you your entire homelab telemetry!
+Now, typing **`j`** and pressing Enter instantly displays your entire homelab telemetry!
+
+---
+
+### 6.2 Automatic Status Dashboard on SSH Login
+
+To automatically greet yourself with the full system telemetry dashboard every time you open an SSH connection, add an execution guard to your remote server's `~/.bashrc`:
+
+```bash
+cat << 'EOF' >> ~/.bashrc
+
+# Show janus status automatically on SSH login
+if [[ -n "$SSH_CONNECTION" && -z "$JANUS_STATUS_SHOWN" ]]; then
+    export JANUS_STATUS_SHOWN=1
+    janus status
+fi
+EOF
+source ~/.bashrc
+```
+
+#### Why this implementation is robust:
+* **`[[ -n "$SSH_CONNECTION" ]]`**: Ensures `janus status` runs specifically during remote SSH login sessions, preventing it from interrupting automated SCP/SFTP transfers, non-interactive scripts, or local terminal sessions.
+* **`[[ -z "$JANUS_STATUS_SHOWN" ]]` & `export JANUS_STATUS_SHOWN=1`**: Acts as a session guard. It prevents the dashboard from redundantly re-executing when you open nested subshells (e.g., inside `tmux`, `screen`, sub-bash sessions, or VS Code Remote terminal panes).

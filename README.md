@@ -174,7 +174,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 20. [**Guide 20: Janus Unified CLI — Terminal Command Center**](guides/20-janus-unified-cli.md)
     * Single command interface (`/usr/local/bin/janus`) wrapping Docker, UFW, NVIDIA telemetry, and GRUB.
     * Real-time hardware telemetry dashboard (`janus status`) with colored usage bars for CPU, 40GB RAM, NVMe/HDD storage, and RTX 2070 GPU VRAM.
-    * Safe dual-boot switch (`janus to-windows`), manual backup triggers (`janus backup`), and fuzzy container log tailing (`janus logs <service>`).
+    * Safe dual-boot switch (`janus to-windows`), manual backup triggers (`janus backup`), fuzzy container log tailing (`janus logs <service>`), and automatic SSH login telemetry.
 
 21. [**Guide 21: GRUB Boot Management & Remote Dual-Boot Runbook**](guides/21-grub-boot-management-and-troubleshooting.md)
     * Permanent enforcement of headless auto-boot into Ubuntu Server on remote power-on.
