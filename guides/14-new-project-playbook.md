@@ -82,41 +82,27 @@ Always create your repository inside your centralized GitHub organization:
 > [!IMPORTANT]
 > **Never spin up a separate PostgreSQL container for a mini-project.** Project Janus has a shared, high-performance PostgreSQL 18 instance with automated daily snapshots. Always create an isolated user and database inside it.
 
-1. **Find your active application PostgreSQL container ID**:
-   ```bash
-   docker ps --filter "ancestor=postgres:18-alpine" --format "{{.Names}}"
-   # Example output: o4nipot4qcoaskqwss3zf6bq
-   ```
+#### 1. Instant Automated Provisioning Script (`provision-db.sh`):
+Run the helper script on the Janus host (or pipe via SSH):
+```bash
+./scripts/provision-db.sh <app_name>
+```
+*(Example: `./scripts/provision-db.sh smart-receipts`)*.
+It automatically locates the active PostgreSQL 18 container, creates `<app_name>_user`, generates a 24-character encrypted password, creates `<app_name>_db`, assigns public schema grants, and outputs the exact `DATABASE_URL` for Coolify!
 
-2. **Generate a secure password**:
-   ```bash
-   openssl rand -base64 24
-   ```
-
-3. **Provision the database & user in one non-interactive command**:
-   *(Replace `<app_name>`, `<app_user>`, `<app_password>`, and the container ID)*:
-   ```bash
-   docker exec -i o4nipot4qcoaskqwss3zf6bq psql -U postgres << 'EOF'
-   CREATE USER app_user WITH ENCRYPTED PASSWORD 'GeneratedPasswordHere';
-   CREATE DATABASE app_db OWNER app_user;
-   GRANT ALL PRIVILEGES ON DATABASE app_db TO app_user;
-   \c app_db
-   GRANT ALL ON SCHEMA public TO app_user;
-   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO app_user;
-   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO app_user;
-   EOF
-   ```
-
-4. **Your Internal Connection String**:
-   * **Node / Go / Java / Generic**:
-     ```text
-     DATABASE_URL=postgresql://app_user:GeneratedPasswordHere@o4nipot4qcoaskqwss3zf6bq:5432/app_db
-     ```
-   * **Python Async (FastAPI / SQLAlchemy + asyncpg)**:
-     ```text
-     DATABASE_URL=postgresql+asyncpg://app_user:GeneratedPasswordHere@o4nipot4qcoaskqwss3zf6bq:5432/app_db
-     ```
-   *(Note: Remember to URL-encode any special characters like `@` or `#` if used in passwords)*.
+#### 2. Manual Fallback via `psql`:
+```bash
+CONTAINER_NAME=$(docker ps --filter "ancestor=postgres:18-alpine" --format "{{.Names}}" | head -n 1)
+docker exec -i "${CONTAINER_NAME}" psql -U postgres << 'EOF'
+CREATE USER app_user WITH ENCRYPTED PASSWORD 'GeneratedPasswordHere';
+CREATE DATABASE app_db OWNER app_user;
+GRANT ALL PRIVILEGES ON DATABASE app_db TO app_user;
+\c app_db
+GRANT ALL ON SCHEMA public TO app_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO app_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO app_user;
+EOF
+```
 
 ---
 
@@ -126,9 +112,14 @@ If your app needs Celery, BullMQ, Redis caching, or session storage:
 * **Container Hostname**: Found under Coolify $\rightarrow$ `Infrastructure` $\rightarrow$ `Redis` (or check `docker ps --filter "ancestor=redis:7.2-alpine"`).
 * **Connection String**:
   ```text
-  REDIS_URL=redis://:YOUR_SHARED_REDIS_PASSWORD@<redis-container-id>:6379/1
+  REDIS_URL=redis://:YOUR_SHARED_REDIS_PASSWORD@<redis-container-id>:6379/<db_index>
   ```
-* **Best Practice**: Use a dedicated Redis database index (`/0` for Docmost, `/1` for project A, `/2` for project B) to prevent key collision.
+* **Best Practice**: Use a dedicated Redis database index (`/0` for Docmost, `/1` for project A, `/2` for project B, `/3` for Nook) to prevent key collision.
+* **Check Free Databases**: Run on the Janus host terminal:
+  ```bash
+  docker exec -i $(docker ps --filter "name=redis" --format "{{.Names}}" | head -n 1) redis-cli -a "YOUR_REDIS_PASSWORD" INFO keyspace
+  ```
+  *(Only databases that currently contain keys are listed. Any unlisted index between 0 and 15 is 100% empty and free to allocate)*.
 
 ---
 
@@ -139,19 +130,32 @@ If your project handles file uploads, PDF processing, or media hosting:
 > [!NOTE]
 > IAM policies and service accounts are provisioned via the `mc` CLI on Janus (the Community Edition web console is strictly an object browser).
 
-#### 1. Instant Provisioning Script (5 Seconds)
-SSH into Janus and run this single block (replace `PROJECT_NAME="smart-receipts"` with your new project name):
+#### 1. Instant Automated Provisioning Script (`provision-s3.sh`):
+Run the helper script on the Janus host:
+```bash
+./scripts/provision-s3.sh <app_name> [bucket_name] [--public|--private]
+```
+*(Example: `./scripts/provision-s3.sh nook`)*.
 
+This script:
+1. Locates the running MinIO container and initializes the `mc` host alias `janus` using the container's environment variables (stripping hidden Windows `\r` carriage returns).
+2. Ensures bucket `<app_name>-media` exists.
+3. Compiles and registers `<app_name>-policy` granting access only to that bucket.
+4. Generates a secure secret and creates `<app_name>-user`.
+5. Sets public anonymous download on the bucket if public web/PWA display is needed.
+6. Prints ready-to-copy `S3_*` variables for Coolify!
+
+#### 2. Manual `mc` CLI Execution:
 ```bash
 PROJECT_NAME="smart-receipts"
 BUCKET_NAME="${PROJECT_NAME}-data"
 USER_NAME="${PROJECT_NAME}-user"
-USER_SECRET=$(openssl rand -base64 24)
+USER_SECRET=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 24)
 
-# 1. Create isolated bucket
-mc mb "janus/${BUCKET_NAME}"
+# Create bucket
+mc mb --ignore-existing "janus/${BUCKET_NAME}"
 
-# 2. Create isolated IAM policy file
+# Create policy
 cat << EOF > /tmp/${PROJECT_NAME}-policy.json
 {
   "Version": "2012-10-17",
@@ -172,24 +176,11 @@ cat << EOF > /tmp/${PROJECT_NAME}-policy.json
 }
 EOF
 
-# 3. Register policy, create user, and attach policy
 mc admin policy create janus "${PROJECT_NAME}-policy" /tmp/${PROJECT_NAME}-policy.json
 mc admin user add janus "${USER_NAME}" "${USER_SECRET}"
 mc admin policy attach janus "${PROJECT_NAME}-policy" --user "${USER_NAME}"
 rm /tmp/${PROJECT_NAME}-policy.json
-
-# 4. (Optional) If files are public images/downloads rendered directly in web browsers:
-# mc anonymous set download "janus/${BUCKET_NAME}"
-
-# 5. Output ready-to-copy credentials
-echo ""
-echo "=== PROVISIONED S3 CREDENTIALS FOR ${PROJECT_NAME} ==="
-echo "S3_ENDPOINT=https://s3.your-domain.duckdns.org (or http://minio:9000)"
-echo "S3_BUCKET=${BUCKET_NAME}"
-echo "S3_ACCESS_KEY=${USER_NAME}"
-echo "S3_SECRET_KEY=${USER_SECRET}"
-echo "S3_FORCE_PATH_STYLE=true"
-echo "S3_REGION=us-east-1"
+mc anonymous set download "janus/${BUCKET_NAME}"
 ```
 
 #### 2. Public vs. Private Buckets

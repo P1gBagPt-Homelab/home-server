@@ -182,26 +182,42 @@ To guarantee that **Project A cannot touch Project B's files**, follow this 3-st
 
 ---
 
-## 5. Quick Automation Script (`mc` CLI)
+## 5. Quick Automation Script (`mc` CLI & `provision-s3.sh`)
 
-If you prefer provisioning buckets and credentials in 5 seconds from the Ubuntu terminal without clicking through the UI:
+You can provision an isolated project bucket, IAM policy, and credentials in 5 seconds using either the automated script or direct `mc` CLI:
+
+### Option A: Automated Provisioning Script (`provision-s3.sh`)
+From your project repository (or `~/scripts` on Janus):
+```bash
+./scripts/provision-s3.sh <app_name> [bucket_name] [--public|--private]
+```
+* Automatically locates the running MinIO container.
+* Extracts root credentials cleanly (stripping carriage returns `\r`) and initializes the `janus` alias.
+* Ensures the bucket exists, compiles the scoped IAM policy, adds the user, and attaches permissions.
+* Configures anonymous download if public (for mobile/web PWA media).
+* Prints ready-to-paste Coolify environment variables.
+
+### Option B: Manual `mc` CLI Execution
 
 ```bash
 # 1. Install MinIO client on Ubuntu (one-time setup)
 sudo curl -fsSL https://github.com/minio/mc/releases/download/RELEASE.2025-08-13T08-35-41Z/mc.linux-amd64.RELEASE.2025-08-13T08-35-41Z -o /usr/local/bin/mc
 sudo chmod +x /usr/local/bin/mc
 
-# 2. Configure alias for local MinIO admin
-mc alias set janus http://localhost:9000 janus-admin "YourAdminPasswordHere"
+# 2. Configure alias for local MinIO admin (clean env extraction)
+CONTAINER=$(docker ps --filter "name=minio" --format "{{.Names}}" | head -n 1)
+MINIO_USER=$(docker exec "${CONTAINER}" env | grep '^MINIO_ROOT_USER=' | cut -d= -f2- | tr -d '\r\n')
+MINIO_PASS=$(docker exec "${CONTAINER}" env | grep '^MINIO_ROOT_PASSWORD=' | cut -d= -f2- | tr -d '\r\n')
+mc alias set janus http://127.0.0.1:9000 "${MINIO_USER}" "${MINIO_PASS}"
 
-# 3. Provision a new isolated project in one script:
+# 3. Provision a new isolated project:
 PROJECT_NAME="portfolio"
 BUCKET_NAME="${PROJECT_NAME}-storage"
 USER_NAME="${PROJECT_NAME}-user"
-USER_SECRET=$(openssl rand -base64 24)
+USER_SECRET=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 24)
 
 # Create bucket
-mc mb "janus/${BUCKET_NAME}"
+mc mb --ignore-existing "janus/${BUCKET_NAME}"
 
 # Create isolated policy file
 cat << EOF > /tmp/${PROJECT_NAME}-policy.json
@@ -227,6 +243,9 @@ mc admin policy create janus "${PROJECT_NAME}-policy" /tmp/${PROJECT_NAME}-polic
 mc admin user add janus "${USER_NAME}" "${USER_SECRET}"
 mc admin policy attach janus "${PROJECT_NAME}-policy" --user "${USER_NAME}"
 rm /tmp/${PROJECT_NAME}-policy.json
+
+# (Optional) Public download access for browser images
+mc anonymous set download "janus/${BUCKET_NAME}"
 
 # Output credentials ready for .env
 echo "=== PROVISIONED CREDENTIALS FOR ${PROJECT_NAME} ==="
