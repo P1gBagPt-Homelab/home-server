@@ -178,8 +178,8 @@ A documentation repository and operational guide for running a dual-purpose pers
 
 21. [**Guide 21: GRUB Boot Management & Remote Dual-Boot Runbook**](guides/21-grub-boot-management-and-troubleshooting.md)
     * Permanent enforcement of headless auto-boot into Ubuntu Server on remote power-on.
-    * Preventing sticky Windows boot selection caused by `GRUB_SAVEDEFAULT` or cached `grubenv` flags.
-    * Troubleshooting matrix for UEFI boot priority, `os-prober`, and one-shot `grub-reboot` workflows.
+    * Preventing sticky Windows boot selection caused by `GRUB_SAVEDEFAULT`, cached `grubenv` flags, or GRUB LVM read-only limitations.
+    * Troubleshooting matrix for UEFI boot priority, `os-prober`, one-shot `efibootmgr --bootnext` and `grub-reboot` workflows.
 
 22. [**Guide 22: API Standards, Git-Native Testing (Bruno) & Zero-Cost Docs (Scalar)**](guides/22-api-standards-documentation-and-testing.md)
     * 100% Free and Open-Source API quality framework with zero cloud lock-in ($0/month).
@@ -195,7 +195,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 * **Isolation Level**: Complete hardware disk segregation.
   * **Disks 1 & 2 (NTFS)**: Windows 10/11 OS, games, and daily personal apps.
   * **Disks 3 & 4 (ext4/ZFS)**: Dedicated Ubuntu Server 24.04 LTS, Docker containers, and storage pool. Windows cannot read or modify these filesystems natively.
-* **Boot Management**: GRUB configured to auto-boot to **Ubuntu Server** on remote power-on, with `grub-reboot` support for one-shot remote boots into Windows.
+* **Boot Management**: GRUB configured to auto-boot to **Ubuntu Server** on remote power-on, with UEFI `BootNext` (`efibootmgr`) and `grub-reboot` support for one-shot remote boots into Windows.
 * **Remote Power Control**: Internal **PCIe WiFi Power Switch Card** (WETEN JH-PcPro) connected to ASUS `PANEL` header `PWR_SW` pins. Provides safe one-tap ACPI graceful shutdowns and instant remote turn-ons.
 * **Network & Remote Access (Zero Public Exposure)**: Self-hosted WireGuard VPN (via `wg-easy` container) + Dynamic DNS (DDNS). Ports 80 & 443 are **closed** on the router; all internal web services get valid Let's Encrypt SSL via DuckDNS DNS-01 challenges. Silent perimeter against internet botnets.
 * **Application & Monitoring Platform**: **Coolify PaaS** for Vercel-like Git-push deployments, 1-click PostgreSQL/Redis databases, Docmost wiki, **Uptime Kuma** alerts, and **Netdata** hardware/RTX 2070 telemetry.
@@ -232,7 +232,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 6. [**03. Dual-Boot Architecture & OS Isolation Guide**](docs/03-operating-system-and-workflow.md)
    * Complete cross-OS disk isolation (ext4/ZFS invisible to Windows).
    * Disabling Windows Fast Startup (`powercfg -h off`) to avoid locked disk state.
-   * Headless auto-boot to Linux Server and remote one-time boot to Windows via `grub-reboot`.
+   * Headless auto-boot to Linux Server and remote one-time boot to Windows via UEFI `BootNext` / `grub-reboot`.
 
 7. [**04. Remote Access & WireGuard VPN Setup**](docs/04-remote-access-and-networking.md)
    * Public IP & DDNS configuration.

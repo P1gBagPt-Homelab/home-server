@@ -16,7 +16,7 @@ Day-to-day administration of a hybrid gaming PC and home server traditionally re
 * Checking storage usage across LVM SSD and cold HDD: `df -h / /data`
 * Checking RAM pools and CPU thermals: `free -m`, `sensors`
 * Tailing container logs without memorizing hashes: `docker logs -f --tail 100 <container_name>`
-* Switching OS to Windows: `sudo grub-reboot "Windows Boot Manager (on /dev/nvme0n1p1)" && sudo reboot`
+* Switching OS to Windows: `sudo efibootmgr --bootnext 0001 && sudo reboot` (or `sudo grub-reboot "Windows Boot Manager"`)
 * Triggering offsite backups: `sudo bash /data/scripts/backup-janus.sh`
 
 The **Janus CLI** bundles all of these capabilities into a single, lightning-fast terminal dashboard and command set:
@@ -158,8 +158,10 @@ janus to-windows
 ```
 * **Auto-Detection**: Automatically parses `/boot/grub/grub.cfg` to find your Windows Boot Manager entry.
 * **Safety Confirmation**: Prompts with `Are you sure you want to reboot into Windows now? (y/N)`.
-* **Graceful Transition**: Uses `sudo grub-reboot` to set a **one-time next boot** and reboots cleanly.
+* **Graceful Transition**: Uses `sudo efibootmgr --bootnext <id>` (or `grub-reboot`) to set a **one-time next boot** and reboots cleanly.
 * **Auto-Revert**: When you are done gaming, restarting or shutting down Windows **automatically returns to Ubuntu Server**.
+> [!TIP]
+> On machines where `/boot` resides on an LVM pool (like Janus), `efibootmgr --bootnext 0001` is preferred over `grub-reboot` to avoid stuck flags caused by GRUB's read-only LVM limitation. See [Guide 21](21-grub-boot-management-and-troubleshooting.md).
 
 ---
 

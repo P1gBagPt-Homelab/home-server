@@ -49,7 +49,7 @@ When you toggle the smart plug ON from outside your home, there is no one at the
    # Set timeout to 3-5 seconds (gives you a moment to choose Windows if you are sitting at the desk)
    GRUB_TIMEOUT=3
 
-   # Enable one-shot reboot memory
+   # Disable saving alternative selections
    GRUB_SAVEDEFAULT=false
    ```
 3. Clear any sticky boot environment variables:
@@ -73,23 +73,27 @@ When you toggle the smart plug ON from outside your home, there is no one at the
 
 If you are away or want to switch from Server mode to Gaming mode without entering BIOS:
 
-### Step 1: Find the Windows Boot Manager Entry Name
-Run this command in Linux:
-```bash
-grep -i -E "menuentry 'windows" /boot/grub/grub.cfg
-```
-*(Example output: `menuentry 'Windows Boot Manager (on /dev/nvme0n1p1)' ...`)*
+### Preferred Method (Bulletproof on LVM): UEFI `BootNext` via `efibootmgr`
+Because Janus hosts `/` on an LVM pool where GRUB cannot write to disk at boot time to clear volatile flags, using hardware-level UEFI NVRAM is the cleanest and most reliable method:
 
-### Step 2: Use `grub-reboot` for a One-Time Boot into Windows
-When you want the machine to reboot into Windows just once:
 ```bash
-# Set next boot to Windows
-sudo grub-reboot "Windows Boot Manager (on /dev/nvme0n1p1)"
+# 1. Identify Windows Boot Manager entry number (e.g., Boot0001)
+sudo efibootmgr
 
-# Reboot immediately
-sudo reboot
+# 2. Command the motherboard to boot Windows for one session only
+sudo efibootmgr --bootnext 0001 && sudo reboot
 ```
-The machine will boot directly into Windows for your gaming session. On the *subsequent* reboot or next smart plug power-on, it will automatically revert to your default **Linux Server**.
+
+* **Hardware Handled**: The one-shot boot is managed in motherboard NVRAM.
+* **Auto-Cleared**: UEFI firmware deletes `BootNext` before launching Windows.
+* **Guaranteed Auto-Revert**: Shutting down Windows returns automatically to Ubuntu (`Boot0004`).
+
+### Alternative Method: `grub-reboot`
+```bash
+sudo grub-reboot "Windows Boot Manager (on /dev/nvme0n1p1)" && sudo reboot
+```
+> [!WARNING]
+> If `/boot/grub` is on an LVM volume, GRUB may be unable to write back to clear `next_entry` at boot time, causing Windows to stay pre-selected on reboot. Use `efibootmgr --bootnext` above to prevent this.
 
 ---
 
@@ -97,4 +101,4 @@ The machine will boot directly into Windows for your gaming session. On the *sub
 
 When you are done gaming in Windows and want to return to Server mode:
 * Simply shut down Windows normally (`Start > Shut down`, or `shutdown /s /t 0`).
-* Next time the PC is turned on (manually or via smart plug), it automatically boots back into the **Linux Server**.
+* Next time the PC is turned on (manually or via smart plug), the motherboard follows standard `BootOrder` and automatically boots back into the **Linux Server**.
