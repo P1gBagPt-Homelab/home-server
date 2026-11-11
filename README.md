@@ -50,6 +50,7 @@ A documentation repository and operational guide for running a dual-purpose pers
 | **19** | [Network Hardening (Zero Exposure)](guides/19-network-hardening-dns01-and-private-access.md) | ✅ Completed | Closed Ports 80 & 443, DuckDNS DNS-01 SSL challenges, 100% WireGuard-only privacy |
 | **20** | [Janus Unified CLI](guides/20-janus-unified-cli.md) | ✅ Completed | Terminal dashboard (`janus status`), 1-click Windows switch, manual backup & log tailing |
 | **21** | [GRUB Boot Management](guides/21-grub-boot-management-and-troubleshooting.md) | ✅ Completed | Enforced unattended auto-boot to Ubuntu, GRUB env variable cleanup & dual-boot runbook |
+| **23** | [Container Update Tracking (WUD)](guides/23-container-update-tracking-wud.md) | ✅ Completed | Notify-only Docker update dashboard (`updates.your-domain`), Discord alerts & Prometheus |
 
 ---
 
@@ -187,6 +188,13 @@ A documentation repository and operational guide for running a dual-purpose pers
     * Git-committed API collections and smoke tests with Bruno (`.bru` files in repo).
     * CI quality gates running `@usebruno/cli` on Janus self-hosted runner before Coolify deployments.
     * Enforced 5 Golden Endpoints (`/healthz`, `/readyz`, `/version`, `/openapi.json`, `/docs`) and RFC 7807 error format with GlitchTip correlation.
+
+23. [**Guide 23: Container Update Tracking & Alerts with WUD (What's Up Docker?)**](guides/23-container-update-tracking-wud.md)
+    * Notify-only container update tracker (`getwud/wud`) deployed on Coolify with read-only Docker socket access.
+    * Mandatory admin authentication, persistent `/data/volumes/wud` storage, and conflict-free port mapping (`3002:3000`).
+    * Batch Discord and Telegram notifications for new upstream tags and `:latest` image digests.
+    * Docker label rules (`wud.watch`, `wud.watch.digest`, `wud.tag.include`) for local builds vs upstream images.
+    * Prometheus `/metrics` scraping and Grafana stat query integration.
 
 ---
 
